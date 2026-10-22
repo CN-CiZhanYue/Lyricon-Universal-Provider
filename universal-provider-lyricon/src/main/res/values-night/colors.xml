@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="up_primary">#C0C2FD</color>
+    <color name="up_on_primary">#042C71</color>
+    <color name="up_primary_container">#04409F</color>
+    <color name="up_on_primary_container">#E0E0FC</color>
+    <color name="up_secondary">#C3C3E9</color>
+    <color name="up_secondary_container">#424463</color>
+    <color name="up_on_secondary_container">#E0E0FE</color>
+    <color name="up_tertiary_container">#6E334E</color>
+    <color name="up_on_tertiary_container">#FFD8E7</color>
+    <color name="up_surface">#131317</color>
+    <color name="up_surface_container_low">#1B1B1F</color>
+    <color name="up_surface_container">#1F1F23</color>
+    <color name="up_surface_container_high">#2A2A2E</color>
+    <color name="up_surface_container_highest">#343439</color>
+    <color name="up_on_surface">#E2E2E8</color>
+    <color name="up_on_surface_variant">#C6C5D2</color>
+    <color name="up_outline">#90909C</color>
+    <color name="up_outline_variant">#464651</color>
+    <color name="up_inverse_surface">#E2E2E8</color>
+    <color name="up_inverse_on_surface">#303034</color>
+    <color name="up_inverse_primary">#3757BA</color>
+    <color name="up_error">#F2B8B5</color>
+    <color name="up_on_error">#601410</color>
+    <color name="up_error_container">#8C1D18</color>
+    <color name="up_on_error_container">#F9DEDC</color>
+</resources>

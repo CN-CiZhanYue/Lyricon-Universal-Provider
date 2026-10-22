@@ -1,0 +1,13 @@
+ColorOS Live Lyrics Providers
+Copyright 2026 Andrea-TB and contributors
+
+This product contains source code derived from the LyricProvider project:
+https://github.com/tomakino/LyricProvider
+Copyright Proify, Tomakino, and LyricProvider contributors.
+Licensed under the Apache License, Version 2.0.
+
+The 4.0 migration baseline was created from LyricProvider commit
+292a7da3f88a87e8c6df6b4ae4f56455b6856c72. The migration retains source
+attribution in file headers and records module-level origin in docs/4.0.
+
+Third-party libraries remain subject to their respective licenses and notices.

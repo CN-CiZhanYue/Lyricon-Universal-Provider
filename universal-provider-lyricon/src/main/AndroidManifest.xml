@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:name=".UniversalProviderApplication"
+        android:allowBackup="false"
+        android:description="@string/nls_purpose"
+        android:icon="@mipmap/provider_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/provider_launcher"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.UniversalProvider">
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <!-- Initialize OkHttp on the requesting worker, not before Application.onCreate. -->
+            <meta-data
+                android:name="okhttp3.internal.platform.PlatformInitializer"
+                tools:node="remove" />
+        </provider>
+        <activity
+            android:name=".UniversalMonitorActivity"
+            android:exported="true"
+            android:label="@string/monitor_activity_label">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <meta-data
+            android:name="lyricon_module"
+            android:value="true" />
+        <meta-data
+            android:name="lyricon_module_author"
+            android:value="辞盏月" />
+        <meta-data
+            android:name="lyricon_module_description"
+            android:value="通用播放器 Provider 词幕适配版：取词后同时推送到词幕" />
+        <meta-data
+            android:name="lyricon_module_tags"
+            android:resource="@array/lyricon_module_tags" />
+
+        <receiver
+            android:name=".SnapshotReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="io.github.cn_cizhanyue.lyricon.universal.provider.ACTION_SNAPSHOT_UPDATE" />
+                <action android:name="io.github.cn_cizhanyue.lyricon.universal.provider.ACTION_REQUEST_PLAYER_BINDINGS_SYNC" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>
