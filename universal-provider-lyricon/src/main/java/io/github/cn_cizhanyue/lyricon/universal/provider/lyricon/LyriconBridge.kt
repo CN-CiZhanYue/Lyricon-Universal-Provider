@@ -91,6 +91,7 @@ object LyriconBridge {
                 parsed.toSong(),
                 playback,
                 parsed.hasTranslation,
+                true,
             )
             val firstLines = parsed.lines.take(3).joinToString(",") { "${it.begin}-${it.end}" }
             Log.i(
@@ -131,7 +132,7 @@ object LyriconBridge {
             val key = "placeholder|$songTitle|$songArtist|$duration"
             val metadata = LyricMetadata(mapOf("placeholder" to "true"))
             val song = Song(key, songTitle, songArtist, duration, metadata, null)
-            publisherFor(ownerPackage).submit(key, song, playback, false)
+            publisherFor(ownerPackage).submit(key, song, playback, false, false)
         }
     }
 

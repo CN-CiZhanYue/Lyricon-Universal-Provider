@@ -8,9 +8,9 @@
         android:name=".UniversalProviderApplication"
         android:allowBackup="false"
         android:description="@string/nls_purpose"
-        android:icon="@mipmap/provider_launcher"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/provider_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.UniversalProvider">
         <provider
@@ -32,6 +32,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".CustomBackgroundActivity"
+            android:exported="false"
+            android:theme="@style/Theme.UniversalProvider" />
+
         <meta-data
             android:name="lyricon_module"
             android:value="true" />

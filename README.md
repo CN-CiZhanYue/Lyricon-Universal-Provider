@@ -2,6 +2,7 @@
 
 > 为 [词幕 Lyricon](https://github.com/tomakino/lyricon) 提供**通用播放器歌词源**的 Provider 模块。一个模块，补上状态栏歌词的最后一公里。
 
+[![Version](https://img.shields.io/badge/version-1.3.0-6C4DFF.svg)]()
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Android-green.svg)]()
 [![LSPosed](https://img.shields.io/badge/framework-LSPosed-orange.svg)]()
@@ -24,11 +25,51 @@
 | 特性 | 说明 |
 |---|---|
 | 🎵 **通用适配** | 不绑定特定播放器，走通用 Provider 路径，大幅拓宽词幕可用歌词来源 |
-| ✨ **逐字歌词** | 与词幕本体联动，支持逐字点亮、翻译行、对唱模式 |
+| ✨ **逐字 / 逐词** | 真实 QRC/YRC 逐字优先；只有行级歌词时，按行起止时间合成中文逐字、英文逐词 |
+| 🌐 **翻译 + AI 翻译** | 优先使用歌词源自带翻译；缺失时可用你自己的 OpenAI 兼容接口补翻译 |
+| 💾 **共享缓存** | 新增「和官方版共用」词源，读取 `/data/system/universal_lyric_cache.json` |
+| 📶 **联网开关** | 关闭后不再联网，只使用共享缓存；默认开启 |
 | 🧩 **职责单一** | **只向词幕推送歌词，不写入 `lyricInfo`**，不与锁屏歌词模块抢通道 |
 | 🤝 **共存友好** | 与官方通用播放器 Provider 可同时存在，锁屏歌词与状态栏歌词互不干扰 |
-| 🏗️ **结构清晰** | 主模块独立为 `universal-provider-lyricon/`，上游解析层与公共层作为编译依赖，便于跟随上游更新 |
+| 🪟 **Liquid Glass** | 极光背景、半透明玻璃卡片、浮动玻璃导航，完全独立于上游的视觉语言 |
+| 🎨 **3 套 UI 主题 × 5 套配色** | Liquid Glass、纸张、霓虹三套界面；每套 5 种主题配色，共 15 种 |
+| 🖼️ **自定义背景** | 可从相册选择一张图片作为全局背景，自动叠加可读性遮罩 |
+| 🌗 **主题切换** | 跟随系统 / 浅色 / 深色；霓虹主题固定深色 |
 | 🔧 **自动构建** | GitHub Actions 已配置，push 或手动触发即自动构建并上传 APK |
+
+---
+
+## 外观与主题
+
+设置 → **外观**：
+
+- **UI 主题**
+  - **Liquid Glass**：极光光晕、玻璃面板、柔和模糊与浮动导航；
+  - **纸张**：暖纸底色、衬线标题、细线分隔与扁平卡片；
+  - **霓虹**：黑底网格、等宽标题、霓虹描边与锐利卡片。
+- **主题配色**（每套 UI 主题 5 种，且各自至少有一种独有配色）
+  - Liquid Glass：极光、余烬、潮汐、幽兰、冰川；
+  - 纸张：墨、棕褐、鼠尾草、钴蓝、锈；
+  - 霓虹：酸、赛博、电压、等离子、矩阵。
+- **主题模式**：跟随系统 / 浅色 / 深色（霓虹固定深色）。
+- **自定义背景**：选择图片作为全局背景，自动叠加可读性遮罩；可清除。
+- **Liquid Glass 开关**：仅 Glass 主题生效，关闭后改用不透明面板，适合低端机或省电场景。
+
+所有选择立即生效并持久化。
+
+---
+
+## AI 翻译
+
+设置 → **AI 翻译**：
+
+- 使用你自己的 **OpenAI 兼容**接口（如 `https://api.openai.com/v1`）；
+- 配置接口地址、API Key、模型、目标语言；
+- 仅在歌词源**没有翻译**、且「注入翻译歌词」与「允许联网」开启时调用；
+- 按行切分，每 40 行一批请求 `/chat/completions`，结果按原时间轴写回；
+- 歌词源已有翻译时优先使用源翻译，不覆盖；
+- 失败后同一首歌 10 分钟内不重试，避免反复消耗 API；
+- Key 与歌词会发送到你填写的接口，请确认可信；Key 保存在本机。
 
 ---
 
@@ -79,7 +120,9 @@
 ```
 Lyricon-Universal-Provider/
 ├── universal-provider-lyricon/   # 主模块：面向词幕的通用 Provider
+│   └── src/main/.../ui/          # Liquid Glass / 纸张 / 霓虹三套 UI 与主题系统
 ├── ...                           # 上游解析层（LRC / QRC / YRC）与 Provider 公共层（编译依赖）
+├── 版本README.md                 # 版本与变更记录
 └── .github/workflows/            # 自动构建
 ```
 
@@ -113,12 +156,19 @@ A：走通用 Provider 路径，不绑定特定播放器。具体可用性取决
 **Q：需要 root 吗？**
 A：需要。本模块依赖 LSPosed 框架。
 
+**Q：逐字歌词为什么不完全准确？**
+A：只有 QRC/YRC 才有真实逐字时间；只有行级歌词时，本模块按行起止时间合成逐字，属于显示增强，不是真实演唱时间。
+
+**Q：AI 翻译必须用 OpenAI 官方吗？**
+A：不需要。任何兼容 `/chat/completions` 的服务都可以，填入对应的接口地址、Key 和模型即可。
+
 ---
 
 ## 致谢
 
 - [Andrea-lyz/ColorOS-Live-Lyrics-Providers](https://github.com/Andrea-lyz/ColorOS-Live-Lyrics-Providers) — 上游 `universal-provider` 与解析层
 - [tomakino/lyricon](https://github.com/tomakino/lyricon) — 词幕本体
+- 辞盏月 — 词幕适配与维护
 
 ---
 

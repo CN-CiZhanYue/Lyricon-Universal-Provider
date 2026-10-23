@@ -9,6 +9,7 @@ import android.content.IntentFilter
 import android.os.Build
 import android.os.UserHandle
 import android.os.SystemClock
+import android.util.Log
 import io.github.andrealtb.coloroslyrics.provider.core.diagnostics.DiagnosticEvent
 import io.github.andrealtb.coloroslyrics.provider.core.diagnostics.StructuredDiagnostics
 import io.github.andrealtb.coloroslyrics.provider.core.diagnostics.DiagnosticHasher
@@ -23,6 +24,7 @@ import io.github.cn_cizhanyue.lyricon.universal.provider.session.SessionReposito
 import io.github.cn_cizhanyue.lyricon.universal.provider.session.TrackIdentityResolver
 import io.github.cn_cizhanyue.lyricon.universal.provider.session.UniversalMonitorSnapshot
 import io.github.cn_cizhanyue.lyricon.universal.provider.cache.UniversalLyricCache
+import io.github.cn_cizhanyue.lyricon.universal.provider.lyricon.AiTranslation
 import io.github.cn_cizhanyue.lyricon.universal.provider.lyricon.LyriconBridge
 import io.github.libxposed.api.XposedInterface
 import io.github.libxposed.api.XposedModule
@@ -109,10 +111,14 @@ class UniversalModuleEntry : XposedModule() {
     @Volatile
     private var wordTimingEnabled: Boolean = loadWordTimingEnabled()
     private var networkEnabled: Boolean = loadNetworkEnabled()
+    private var aiTranslationConfig: AiTranslationConfig = loadAiTranslationConfig()
+    private val aiTranslationsInFlight = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+    private val aiTranslationFailedUntil = java.util.concurrent.ConcurrentHashMap<String, Long>()
+    private val aiTranslationExecutor = java.util.concurrent.Executors.newSingleThreadExecutor { runnable ->
+        Thread(runnable, "LyriconAiTranslation").apply { isDaemon = true }
+    }
     @Volatile
     private var translationEnabled: Boolean = loadTranslationEnabled()
-    @Volatile
-    private var rawLyricEnabled: Boolean = loadRawLyricEnabled()
     @Volatile
     private var debugEnabled: Boolean = loadDebugEnabled()
     @Volatile
@@ -540,6 +546,11 @@ class UniversalModuleEntry : XposedModule() {
                 }
             }
         }
+        if (!realJson.isNullOrBlank()) {
+            runCatching {
+                maybeTranslateWithAi(ownerPackage, currentGen, JSONObject(realJson), title.orEmpty(), artist.orEmpty())
+            }
+        }
         // Publish after the lookup so a cache hit is not reported as pending.
         publishSnapshot(context)
 
@@ -612,6 +623,7 @@ class UniversalModuleEntry : XposedModule() {
                     addAction(UniversalSnapshotStore.ACTION_INJECT_REAL_LYRIC)
                     addAction(UniversalSnapshotStore.ACTION_UPDATE_SOURCE_CONFIG)
                     addAction(UniversalSnapshotStore.ACTION_CLEAR_CACHE)
+                    addAction(UniversalSnapshotStore.ACTION_UPDATE_AI_CONFIG)
                 }
                 val receiver = object : BroadcastReceiver() {
                     override fun onReceive(c: Context?, intent: Intent?) {
@@ -677,7 +689,6 @@ class UniversalModuleEntry : XposedModule() {
                                 }
                                 val wordTiming = intent.getBooleanExtra(UniversalSnapshotStore.EXTRA_WORD_TIMING_ENABLED, wordTimingEnabled)
                                 val translation = intent.getBooleanExtra(UniversalSnapshotStore.EXTRA_TRANSLATION_ENABLED, translationEnabled)
-                                val rawLyric = intent.getBooleanExtra(UniversalSnapshotStore.EXTRA_RAW_LYRIC_ENABLED, rawLyricEnabled)
                                 val debug = intent.getBooleanExtra(UniversalSnapshotStore.EXTRA_DEBUG_ENABLED, debugEnabled)
                                 val clockFallback = intent.getBooleanExtra(
                                     UniversalSnapshotStore.EXTRA_CLOCK_LINE_FALLBACK_ENABLED,
@@ -686,7 +697,6 @@ class UniversalModuleEntry : XposedModule() {
                                 val priorityChanged = priority != sourcePriority
                                 val wordTimingChanged = wordTiming != wordTimingEnabled
                                 val translationChanged = translation != translationEnabled
-                                val rawLyricChanged = rawLyric != rawLyricEnabled
                                 val debugChanged = debug != debugEnabled
                                 val network = intent.getBooleanExtra(UniversalSnapshotStore.EXTRA_NETWORK_ENABLED, networkEnabled)
                                 val networkChanged = network != networkEnabled
@@ -694,13 +704,12 @@ class UniversalModuleEntry : XposedModule() {
                                 sourcePriority = priority
                                 wordTimingEnabled = wordTiming
                                 translationEnabled = translation
-                                rawLyricEnabled = rawLyric
                                 debugEnabled = debug
                                 clockLineFallbackEnabled = clockFallback
                                 networkEnabled = network
                                 // Only a processing downgrade may rewrite the in-memory payloads;
                                 // upgrades apply from the full cached payload when the next track loads.
-                                if ((wordTimingChanged && !wordTiming) || (rawLyricChanged && !rawLyric) ||
+                                if ((wordTimingChanged && !wordTiming) ||
                                     (translationChanged && !translation) || (clockFallbackChanged && clockFallback)) {
                                     realLyricsByPackage.replaceAll { key, value -> publishedPayload(value, key.substringBefore('|')) }
                                 }
@@ -711,7 +720,6 @@ class UniversalModuleEntry : XposedModule() {
                                     if (priorityChanged) persistSourceConfig(priority)
                                     if (wordTimingChanged) persistWordTimingEnabled(wordTiming)
                                     if (translationChanged) persistTranslationEnabled(translation)
-                                    if (rawLyricChanged) persistRawLyricEnabled(rawLyric)
                                     if (debugChanged) persistDebugEnabled(debug)
                                     if (clockFallbackChanged) persistClockLineFallbackEnabled(clockFallback)
                                     if (networkChanged) persistNetworkEnabled(network)
@@ -719,6 +727,14 @@ class UniversalModuleEntry : XposedModule() {
                                 UniversalDiagnostics.sourceConfigUpdated(sourcePriority.map { it.name })
                                 // The home screen shows whether the current player is on the clock fallback.
                                 publishSnapshot(context)
+                            }
+                            UniversalSnapshotStore.ACTION_UPDATE_AI_CONFIG -> {
+                                val raw = intent.getStringExtra(UniversalSnapshotStore.EXTRA_AI_CONFIG) ?: return
+                                val config = AiTranslationConfig.fromJson(raw) ?: return
+                                aiTranslationConfig = config
+                                aiTranslationFailedUntil.clear()
+                                configExecutor.execute { persistAiTranslationConfig(config) }
+                                Log.i("LyriconUniversal", "AI translation config updated enabled=${config.enabled}")
                             }
                             UniversalSnapshotStore.ACTION_CLEAR_CACHE -> {
                                 val cleared = UniversalLyricCache.clear()
@@ -959,7 +975,7 @@ class UniversalModuleEntry : XposedModule() {
             append("lyricSource=").append(lyricSourceOf(lyricPayload)).append('\n')
             append("lyricStatus=").append(lyricStatusOf(lyricPayload)).append('\n')
             append("lyricClockFallback=").append(
-                descriptor != null && wordTimingEnabled && rawLyricEnabled && clockLineFallbackActive(descriptor.ownerPackage)
+                descriptor != null && wordTimingEnabled && clockLineFallbackActive(descriptor.ownerPackage)
             ).append('\n')
             append("cachedSongs=").append(UniversalLyricCache.getCacheCount()).append('\n')
             append(UniversalLyricHistory.snapshotLines(recentHistory))
@@ -1148,6 +1164,54 @@ class UniversalModuleEntry : XposedModule() {
         }.getOrDefault(jsonStr)
     }
 
+    private fun maybeTranslateWithAi(
+        ownerPackage: String,
+        generation: Long,
+        payload: JSONObject,
+        title: String,
+        artist: String
+    ) {
+        val config = aiTranslationConfig
+        if (!config.enabled || !translationEnabled || !networkEnabled) return
+        if (config.endpoint.isBlank() || config.apiKey.isBlank() || config.model.isBlank()) return
+        if (payload.optString("translationLyric").isNotBlank()) return
+        val lyric = payload.optString("lyric")
+        if (lyric.isBlank()) return
+        val key = "$ownerPackage|$generation"
+        if ((aiTranslationFailedUntil[key] ?: 0L) > SystemClock.elapsedRealtime()) return
+        if (!aiTranslationsInFlight.add(key)) return
+        aiTranslationExecutor.execute {
+            try {
+                val translated = AiTranslation.translate(
+                    lyric = lyric,
+                    endpoint = config.endpoint,
+                    apiKey = config.apiKey,
+                    model = config.model,
+                    target = config.target,
+                )
+                if (translated.isNullOrBlank()) return@execute
+                val currentJson = realLyricsByPackage[key] ?: return@execute
+                val current = runCatching { JSONObject(currentJson) }.getOrNull() ?: return@execute
+                if (current.optString("translationLyric").isNotBlank()) return@execute
+                val currentGeneration = current.optLong("sessionGeneration", -1L)
+                if (currentGeneration > 0L && currentGeneration != generation) return@execute
+                current.put("translationLyric", translated)
+                val updated = current.toString()
+                realLyricsByPackage[key] = updated
+                saveCachedLyric(title, artist, updated)
+                replayMetadataForGeneration(ownerPackage, generation)
+                publishSnapshot(null)
+                aiTranslationFailedUntil.remove(key)
+                Log.i("LyriconUniversal", "AI translation attached for $ownerPackage gen=$generation")
+            } catch (error: Throwable) {
+                aiTranslationFailedUntil[key] = SystemClock.elapsedRealtime() + 10 * 60 * 1000L
+                Log.w("LyriconUniversal", "AI translation failed for $ownerPackage", error)
+            } finally {
+                aiTranslationsInFlight.remove(key)
+            }
+        }
+    }
+
     private fun applyFetchedLyric(
         ownerPackage: String,
         generation: Long,
@@ -1158,6 +1222,7 @@ class UniversalModuleEntry : XposedModule() {
         val payload = JSONObject(json)
         val published = applyWordTimingPolicy(payload, ownerPackage)
         realLyricsByPackage["$ownerPackage|$generation"] = payload.toString()
+        maybeTranslateWithAi(ownerPackage, generation, payload, title, artist)
         replayMetadataForGeneration(ownerPackage, generation)
         // The track may already have been skipped, so its row takes the result where it stands.
         UniversalLyricHistory.row(title, artist, lyricSourceOf(payload), lyricStatusOf(payload))?.let { row ->
@@ -1209,6 +1274,18 @@ class UniversalModuleEntry : XposedModule() {
         runCatching { java.io.File("/data/system/universal_source_config.json").writeText(LyricsSourceConfigStore.encode(priority.map { it.name })) }
     }
 
+    private fun loadAiTranslationConfig(): AiTranslationConfig = runCatching {
+        val file = java.io.File("/data/system/lyricon_ai_translation.json")
+        if (!file.isFile) AiTranslationConfig.DEFAULT
+        else AiTranslationConfig.fromJson(file.readText()) ?: AiTranslationConfig.DEFAULT
+    }.getOrDefault(AiTranslationConfig.DEFAULT)
+
+    private fun persistAiTranslationConfig(config: AiTranslationConfig) {
+        runCatching {
+            java.io.File("/data/system/lyricon_ai_translation.json").writeText(config.toJson())
+        }
+    }
+
     private fun loadNetworkEnabled(): Boolean = runCatching {
         java.io.File("/data/system/lyricon_network.enabled").readText().trim() != "0"
     }.getOrDefault(true)
@@ -1223,14 +1300,6 @@ class UniversalModuleEntry : XposedModule() {
 
     private fun persistWordTimingEnabled(enabled: Boolean) {
         runCatching { java.io.File("/data/system/lyricon_word_timing.enabled").writeText(if (enabled) "1" else "0") }
-    }
-
-    private fun loadRawLyricEnabled(): Boolean = runCatching {
-        java.io.File("/data/system/universal_raw_lyric.enabled").readText().trim() != "0"
-    }.getOrDefault(true)
-
-    private fun persistRawLyricEnabled(enabled: Boolean) {
-        runCatching { java.io.File("/data/system/universal_raw_lyric.enabled").writeText(if (enabled) "1" else "0") }
     }
 
     private fun loadDebugEnabled(): Boolean = runCatching {
@@ -1266,7 +1335,7 @@ class UniversalModuleEntry : XposedModule() {
         val result = UniversalLyricPayloadPolicy.apply(
             json,
             wordTiming = wordTimingEnabled && !clockFallback,
-            rawLyric = rawLyricEnabled,
+            rawLyric = true,
             translation = translationEnabled
         )
         UniversalDiagnostics.rawLyricPolicy(

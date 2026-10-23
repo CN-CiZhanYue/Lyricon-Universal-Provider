@@ -89,15 +89,8 @@ fun PlayersScreen(state: PlayersUiState) {
             .fillMaxSize()
             .padding(horizontal = 16.dp)
     ) {
-        TopAppBar(
-            title = {
-                Text(stringResource(R.string.players_title), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            },
-            navigationIcon = {
-                IconButton(onClick = {}) {
-                    Icon(Icons.Filled.PlayCircle, contentDescription = null)
-                }
-            },
+        AppHeader(
+            title = stringResource(R.string.players_title),
             actions = {
                 Box {
                     IconButton(onClick = { state.showMenu = true }) {
@@ -127,11 +120,7 @@ fun PlayersScreen(state: PlayersUiState) {
                         )
                     }
                 }
-            },
-            windowInsets = WindowInsets.statusBars,
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
+            }
         )
 
         Text(

@@ -68,19 +68,9 @@ fun PriorityScreen(onBack: () -> Unit) {
             .fillMaxSize()
             .padding(horizontal = 16.dp)
     ) {
-        TopAppBar(
-            title = {
-                Text(stringResource(R.string.priority_title), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            },
-            navigationIcon = {
-                IconButton(onClick = onBack) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
-                }
-            },
-            windowInsets = WindowInsets.statusBars,
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
+        AppHeader(
+            title = stringResource(R.string.priority_title),
+            onBack = onBack
         )
 
         Text(
@@ -188,9 +178,8 @@ fun PriorityScreen(onBack: () -> Unit) {
                     appContext.sendBroadcast(Intent(UniversalSnapshotStore.ACTION_UPDATE_SOURCE_CONFIG).apply {
                         addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
                         putExtra(UniversalSnapshotStore.EXTRA_SOURCE_PRIORITY, LyricsSourceConfigStore.encode(selected))
-                        putExtra(UniversalSnapshotStore.EXTRA_WORD_TIMING_ENABLED, prefs.getBoolean(UniversalSettingsConstants.KEY_WORD_TIMING, false))
+                        putExtra(UniversalSnapshotStore.EXTRA_WORD_TIMING_ENABLED, prefs.getBoolean(UniversalSettingsConstants.KEY_WORD_TIMING, true))
                         putExtra(UniversalSnapshotStore.EXTRA_TRANSLATION_ENABLED, prefs.getBoolean(UniversalSettingsConstants.KEY_TRANSLATION, true))
-                        putExtra(UniversalSnapshotStore.EXTRA_RAW_LYRIC_ENABLED, prefs.getBoolean(UniversalSettingsConstants.KEY_RAW_LYRIC, true))
                         putExtra(UniversalSnapshotStore.EXTRA_DEBUG_ENABLED, prefs.getBoolean(UniversalSettingsConstants.KEY_DEBUG, false))
                         putExtra(
                             UniversalSnapshotStore.EXTRA_CLOCK_LINE_FALLBACK_ENABLED,

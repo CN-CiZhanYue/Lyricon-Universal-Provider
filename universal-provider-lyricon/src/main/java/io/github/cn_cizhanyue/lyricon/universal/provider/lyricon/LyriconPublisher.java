@@ -99,8 +99,8 @@ final class LyriconPublisher {
         this.playerPackage = playerPackage;
     }
 
-    void submit(String songKey, Song song, PlaybackState state, boolean translation) {
-        worker.post(() -> submitNow(songKey, song, state, translation));
+    void submit(String songKey, Song song, PlaybackState state, boolean translation, boolean forceSong) {
+        worker.post(() -> submitNow(songKey, song, state, translation, forceSong));
     }
 
     void updatePlayback(PlaybackState state) {
@@ -124,7 +124,7 @@ final class LyriconPublisher {
         worker.post(this::destroyNow);
     }
 
-    private void submitNow(String songKey, Song song, PlaybackState state, boolean translation) {
+    private void submitNow(String songKey, Song song, PlaybackState state, boolean translation, boolean forceSong) {
         if (destroyed || song == null) {
             return;
         }
@@ -135,7 +135,7 @@ final class LyriconPublisher {
             }
             scheduleWatchdog();
         }
-        boolean songChanged = songKey == null || !songKey.equals(pendingSongKey);
+        boolean songChanged = forceSong || songKey == null || !songKey.equals(pendingSongKey);
         pendingSong = song;
         pendingSongKey = songKey;
         pendingTranslation = translation;

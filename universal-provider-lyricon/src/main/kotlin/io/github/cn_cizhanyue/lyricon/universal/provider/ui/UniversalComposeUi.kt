@@ -14,21 +14,8 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.PlayCircle
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,9 +24,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import io.github.cn_cizhanyue.lyricon.universal.provider.R
 import io.github.cn_cizhanyue.lyricon.universal.provider.UniversalAppIo
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
@@ -75,54 +61,13 @@ fun UniversalMainApp(
         BackHandler(enabled = currentScreen == Screen.PRIORITY) {
             currentScreen = Screen.SETTINGS
         }
-        UniversalM3Theme {
+        UniversalM3Theme(settings = ThemeStore.settings) {
+            ThemedBackground {
             Scaffold(
-                containerColor = MaterialTheme.colorScheme.surface,
+                containerColor = Color.Transparent,
                 contentWindowInsets = WindowInsets(0.dp),
                 bottomBar = {
-                    NavigationBar(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                        tonalElevation = 0.dp,
-                        modifier = Modifier.fillMaxWidth(),
-                        windowInsets = WindowInsets.navigationBars
-                    ) {
-                        NavigationBarItem(
-                            selected = currentScreen == Screen.HOME,
-                            onClick = { currentScreen = Screen.HOME },
-                            icon = { Icon(Icons.Filled.Home, contentDescription = stringResource(R.string.nav_home)) },
-                            label = { Text(stringResource(R.string.nav_home)) },
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = MaterialTheme.colorScheme.secondaryContainer
-                            )
-                        )
-                        NavigationBarItem(
-                            selected = currentScreen == Screen.PLAYERS,
-                            onClick = { currentScreen = Screen.PLAYERS },
-                            icon = { Icon(Icons.Filled.PlayCircle, contentDescription = stringResource(R.string.nav_players)) },
-                            label = { Text(stringResource(R.string.nav_players)) },
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = MaterialTheme.colorScheme.secondaryContainer
-                            )
-                        )
-                        NavigationBarItem(
-                            selected = currentScreen == Screen.SEARCH,
-                            onClick = { currentScreen = Screen.SEARCH },
-                            icon = { Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.nav_search)) },
-                            label = { Text(stringResource(R.string.nav_search)) },
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = MaterialTheme.colorScheme.secondaryContainer
-                            )
-                        )
-                        NavigationBarItem(
-                            selected = currentScreen == Screen.SETTINGS || currentScreen == Screen.PRIORITY,
-                            onClick = { currentScreen = Screen.SETTINGS },
-                            icon = { Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.nav_settings)) },
-                            label = { Text(stringResource(R.string.nav_settings)) },
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = MaterialTheme.colorScheme.secondaryContainer
-                            )
-                        )
-                    }
+                    AppNavBar(currentScreen) { currentScreen = it }
                 }
             ) { innerPadding ->
                 Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
@@ -164,7 +109,8 @@ fun UniversalMainApp(
                                     language = code
                                     UniversalAppIo.execute { LanguageStore.write(appContext, code) }
                                 },
-                                onNavigateToSettings = { currentScreen = Screen.SETTINGS }
+                                onNavigateToSettings = { currentScreen = Screen.SETTINGS },
+                                onNavigateToPlayers = { currentScreen = Screen.PLAYERS }
                             )
                             Screen.PLAYERS -> PlayersScreen(state = playersState)
                             Screen.SEARCH -> SearchScreen(
@@ -187,6 +133,7 @@ fun UniversalMainApp(
                         }
                     }
                 }
+            }
             }
         }
     }

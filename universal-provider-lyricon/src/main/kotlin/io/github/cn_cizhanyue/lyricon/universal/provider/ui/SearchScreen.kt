@@ -106,27 +106,12 @@ fun SearchScreen(
             .fillMaxSize()
             .padding(horizontal = 16.dp)
     ) {
-        TopAppBar(
-            title = {
-                Text(
-                    stringResource(
-                        R.string.search_now_playing,
-                        currentTitle.ifBlank { stringResource(R.string.track_placeholder) },
-                        currentArtist.ifBlank { stringResource(R.string.artist_placeholder) }
-                    ),
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            },
-            navigationIcon = {
-                IconButton(onClick = {}) {
-                    Icon(Icons.Filled.MusicNote, contentDescription = null)
-                }
-            },
-            windowInsets = WindowInsets.statusBars,
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface
+        AppHeader(
+            title = stringResource(R.string.nav_search),
+            subtitle = stringResource(
+                R.string.search_now_playing,
+                currentTitle.ifBlank { stringResource(R.string.track_placeholder) },
+                currentArtist.ifBlank { stringResource(R.string.artist_placeholder) }
             )
         )
 

@@ -17,8 +17,8 @@ configure<ApplicationExtension> {
         applicationId = "io.github.cn_cizhanyue.lyricon.universal.provider"
         minSdk = 27
         targetSdk = rootProject.extra.get("targetSdkVersion") as Int
-        versionCode = 5
-        versionName = "1.2.0"
+        versionCode = 10
+        versionName = "1.3.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

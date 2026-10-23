@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import io.github.cn_cizhanyue.lyricon.universal.provider.R
 
 private const val OFFICIAL_URL = "https://github.com/Andrea-lyz/ColorOS-Live-Lyrics-Providers"
+private const val PROJECT_URL = "https://github.com/CN-CiZhanYue/Lyricon-Universal-Provider/"
 
 
 @Composable
@@ -42,19 +43,18 @@ fun AboutDialog(onDismiss: () -> Unit, onOpenNetworkSettings: (() -> Unit)? = nu
                         Text(stringResource(R.string.about_open_network))
                     }
                 }
+                Spacer(Modifier.height(4.dp))
+                TextButton(onClick = { openUrl(context, OFFICIAL_URL) }) {
+                    Text(stringResource(R.string.about_open_official))
+                }
             }
         },
         confirmButton = {
             TextButton(onClick = {
-                runCatching {
-                    context.startActivity(
-                        Intent(Intent.ACTION_VIEW, Uri.parse(OFFICIAL_URL))
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    )
-                }
+                openUrl(context, PROJECT_URL)
                 onDismiss()
             }) {
-                Text(stringResource(R.string.about_open_official))
+                Text(stringResource(R.string.about_open_project))
             }
         },
         dismissButton = {
@@ -63,4 +63,13 @@ fun AboutDialog(onDismiss: () -> Unit, onOpenNetworkSettings: (() -> Unit)? = nu
             }
         },
     )
+}
+
+private fun openUrl(context: android.content.Context, url: String) {
+    runCatching {
+        context.startActivity(
+            Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        )
+    }
 }

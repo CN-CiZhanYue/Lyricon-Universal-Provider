@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import io.github.cn_cizhanyue.lyricon.universal.provider.cache.UniversalLyricCache
 import io.github.cn_cizhanyue.lyricon.universal.provider.ui.Screen
+import io.github.cn_cizhanyue.lyricon.universal.provider.ui.ThemeStore
 import io.github.cn_cizhanyue.lyricon.universal.provider.ui.UniversalMainApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -79,6 +80,7 @@ class UniversalMonitorActivity : ComponentActivity() {
                 preferredRefreshRate = 120f
             }
         }
+        ThemeStore.load(this)
         val initialScreenName = intent.getStringExtra("extra_screen")
         val initialScreen = when (initialScreenName) {
             "players" -> Screen.PLAYERS
