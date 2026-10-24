@@ -5,7 +5,9 @@ import android.content.res.Configuration
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import io.github.cn_cizhanyue.lyricon.universal.provider.UniversalSettingsConstants
 import java.util.Locale
 
@@ -34,5 +36,10 @@ fun ProvideAppLocale(language: String, content: @Composable () -> Unit) {
         config.setLocale(if (language == LanguageStore.EN) Locale.ENGLISH else Locale.SIMPLIFIED_CHINESE)
         context.createConfigurationContext(config)
     }
-    CompositionLocalProvider(LocalContext provides localized, content = content)
+    CompositionLocalProvider(
+        LocalContext provides localized,
+        LocalConfiguration provides localized.resources.configuration,
+        LocalResources provides localized.resources,
+        content = content,
+    )
 }
