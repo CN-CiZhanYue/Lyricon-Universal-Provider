@@ -6,17 +6,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
-
-
-
-
-
-
-
-
-
-
 final class LrcParser {
 
     private static final Pattern LINE_TAG =
@@ -127,10 +116,6 @@ final class LrcParser {
         line.terminalEnd = terminalEnd;
         return line;
     }
-
-    
-
-
 
     private static long absoluteWordTime(long time, long lineBegin) {
         if (time + 1000L < lineBegin) {

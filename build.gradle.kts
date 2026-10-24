@@ -5,6 +5,5 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.jvm) apply false
     alias(libs.plugins.compose.compiler) apply false
 }
-
 extra["compileSdkVersion"] = 37
 extra["targetSdkVersion"] = 37

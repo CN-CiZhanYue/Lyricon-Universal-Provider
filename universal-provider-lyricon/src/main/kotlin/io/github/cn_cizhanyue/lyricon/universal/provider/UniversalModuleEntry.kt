@@ -43,7 +43,7 @@ class UniversalModuleEntry : XposedModule() {
             "com.maxmpz.audioplayer",
             "ink.trantor.coneplayer"
         )
-        private const val BINDINGS_FILE_PATH = "/data/system/universal_bindings.json"
+        private const val BINDINGS_FILE_PATH = "/data/system/lyricon_bindings.json"
         private const val APP_BINDINGS_FILE_PATH =
             "/data/user/0/io.github.cn_cizhanyue.lyricon.universal.provider/files/universal_bound_packages.json"
     }
@@ -82,10 +82,6 @@ class UniversalModuleEntry : XposedModule() {
     @Volatile
     private var cachedMetadataField: Field? = null
     private var cachedPlaybackField: Field? = null
-    @Volatile
-    private var cachedLockField: Field? = null
-    @Volatile
-    private var cachedPushMetadataUpdateMethod: Method? = null
     private val realLyricsByPackage = java.util.concurrent.ConcurrentHashMap<String, String>()
     private val activeRecords = java.util.concurrent.ConcurrentHashMap<String, Any>()
     private val backgroundExecutor = java.util.concurrent.Executors.newSingleThreadExecutor { runnable ->
@@ -182,17 +178,12 @@ class UniversalModuleEntry : XposedModule() {
         val metadataField = fieldOrNull(recordClass, "mMetadata")
         val playbackField = fieldOrNull(recordClass, "mPlaybackState")
         val contextField = fieldOrNull(recordClass, "mContext")
-        val lockField = fieldOrNull(recordClass, "mLock")
-        val pushMetadataUpdateMethod = runCatching {
-            recordClass.getDeclaredMethod("pushMetadataUpdate").apply { isAccessible = true }
-        }.getOrNull()
         val pushSessionDestroyedMethod = runCatching {
             recordClass.getDeclaredMethod("pushSessionDestroyed").apply { isAccessible = true }
         }.getOrNull()
         boundPackages = loadBoundPackages()
         repository.updateBoundFilter(boundPackages, SystemClock.elapsedRealtime())
         currentSystemContext()?.let(::ensureRequestReceiver)
-        currentSystemContext()?.let { UniversalBridgeBindingNotifier.notify(it, boundPackages) }
         hook(setMetadata)
             .setExceptionMode(XposedInterface.ExceptionMode.PROTECTIVE)
             .setId("universal:setMetadata")
@@ -220,8 +211,6 @@ class UniversalModuleEntry : XposedModule() {
                 }
                 cachedMetadataField = metadataField
                 cachedPlaybackField = playbackField
-                cachedLockField = lockField
-                cachedPushMetadataUpdateMethod = pushMetadataUpdateMethod
                 activeRecords[ownerPackage] = record
 
                 if (incoming != null) {
@@ -248,7 +237,7 @@ class UniversalModuleEntry : XposedModule() {
             }
         hookAfter(setPlaybackState, "setPlaybackState") {
             val record = recordOf(it) ?: return@hookAfter
-            publish(record, packageField, userField, metadataField, playbackField, contextField, lockField, pushMetadataUpdateMethod)
+            publish(record, packageField, userField, metadataField, playbackField, contextField)
         }
         if (pushSessionDestroyedMethod != null) {
             hookAfter(pushSessionDestroyedMethod, "pushSessionDestroyed") {
@@ -291,16 +280,12 @@ class UniversalModuleEntry : XposedModule() {
         userField: Field?,
         metadataField: Field?,
         playbackField: Field?,
-        contextField: Field?,
-        lockField: Field?,
-        pushMetadataUpdateMethod: Method?
+        contextField: Field?
     ) {
         val record = stub
         val ownerPackage = packageField?.get(record) as? String ?: return
         cachedMetadataField = metadataField
         cachedPlaybackField = playbackField
-        cachedLockField = lockField
-        cachedPushMetadataUpdateMethod = pushMetadataUpdateMethod
         activeRecords[ownerPackage] = record
 
         val context = (contextField?.get(record) as? Context) ?: currentSystemContext()
@@ -361,7 +346,7 @@ class UniversalModuleEntry : XposedModule() {
         realLyricsByPackage.keys.filter { it.startsWith("$ownerPackage|") && it != "$ownerPackage|$currentGen" }.forEach {
             realLyricsByPackage.remove(it)
         }
-        overlayMetadata(record, session, cachedMetadataField, cachedLockField, cachedPushMetadataUpdateMethod)
+        overlayMetadata(record, session)
 
         val title = session.descriptor.title
         if (realLyricsByPackage["$ownerPackage|$currentGen"].isNullOrBlank() && !title.isNullOrBlank()) {
@@ -441,7 +426,7 @@ class UniversalModuleEntry : XposedModule() {
             realLyricsByPackage.replaceAll { key, value ->
                 if (key.substringBefore('|') == ownerPackage) publishedPayload(value, ownerPackage) else value
             }
-            overlayMetadata(record, session, cachedMetadataField, cachedLockField, cachedPushMetadataUpdateMethod, force = true)
+            overlayMetadata(record, session)
         }
         publishSnapshot(null)
     }
@@ -569,11 +554,7 @@ class UniversalModuleEntry : XposedModule() {
 
     private fun overlayMetadata(
         record: Any,
-        session: ResolvedSession,
-        metadataField: Field?,
-        lockField: Field?,
-        pushMetadataUpdateMethod: Method?,
-        force: Boolean = false
+        session: ResolvedSession
     ) {
         val ownerPackage = session.descriptor.ownerPackage
         if (!boundPackages.contains(ownerPackage)) {
@@ -637,7 +618,6 @@ class UniversalModuleEntry : XposedModule() {
                                     boundPackages = PlayerBindingPolicy.sanitize(list.toSet())
                                     persistBoundPackages(boundPackages)
                                     repository.updateBoundFilter(boundPackages, SystemClock.elapsedRealtime())
-                                    UniversalBridgeBindingNotifier.notify(context, boundPackages)
                                     publishSnapshot(context)
                                     StructuredDiagnostics.logInfo(
                                         DiagnosticEvent(
@@ -678,7 +658,7 @@ class UniversalModuleEntry : XposedModule() {
                                 val activeRecord = activeRecords[pkg]
                                 val activeSession = repository.snapshot().sessions.find { it.descriptor.ownerPackage == pkg }
                                 if (activeRecord != null && activeSession != null && (gen <= 0 || activeSession.descriptor.trackGeneration == gen)) {
-                                    overlayMetadata(activeRecord, activeSession, cachedMetadataField, cachedLockField, cachedPushMetadataUpdateMethod, force = true)
+                                    overlayMetadata(activeRecord, activeSession)
                                 }
                                 publishSnapshot(context)
                             }
@@ -769,7 +749,7 @@ class UniversalModuleEntry : XposedModule() {
             addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
             addFlags(0x01000000)
         }
-        val sent = UniversalBridgeBindingNotifier.sendSafely(context, intent)
+        val sent = runCatching { context.sendBroadcast(intent) }
         UniversalDiagnostics.bridgeBindingsNotified(
             boundPackages.size,
             "provider-bindings-request",
@@ -913,7 +893,6 @@ class UniversalModuleEntry : XposedModule() {
         boundPackages = loaded
         persistBoundPackages(loaded)
         repository.updateBoundFilter(loaded, SystemClock.elapsedRealtime())
-        currentSystemContext()?.let { UniversalBridgeBindingNotifier.notify(it, loaded) }
         UniversalDiagnostics.playerBindingsReloaded(loaded.size, "disk")
         return true
     }
@@ -1248,30 +1227,16 @@ class UniversalModuleEntry : XposedModule() {
             it.descriptor.ownerPackage == ownerPackage && it.descriptor.trackGeneration == generation
         } ?: return
         if (realLyricsByPackage["$ownerPackage|$generation"].isNullOrBlank()) return
-        overlayMetadata(
-            record,
-            session,
-            cachedMetadataField,
-            cachedLockField,
-            cachedPushMetadataUpdateMethod,
-            force = true
-        )
+        overlayMetadata(record, session)
     }
 
-    private fun loadCachedLyric(key: String): String? {
-        val file = java.io.File("/data/system/universal_lyric_cache.json")
-        if (!file.isFile) return null
-        return runCatching {
-            JSONObject(file.readText()).optString(key).takeIf { it.isNotBlank() }
-        }.getOrNull()
-    }
 
     private fun loadSourceConfig(): String = runCatching {
-        java.io.File("/data/system/universal_source_config.json").takeIf { it.isFile }?.readText()
+        java.io.File("/data/system/lyricon_source_config.json").takeIf { it.isFile }?.readText()
     }.getOrNull() ?: LyricsSourceConfigStore.encode(listOf("QQ", "NETEASE", "APPLE_MUSIC", "SHARED_CACHE"))
 
     private fun persistSourceConfig(priority: List<io.github.cn_cizhanyue.lyricon.universal.provider.api.LyricsSourceAggregator.SourceId>) {
-        runCatching { java.io.File("/data/system/universal_source_config.json").writeText(LyricsSourceConfigStore.encode(priority.map { it.name })) }
+        runCatching { java.io.File("/data/system/lyricon_source_config.json").writeText(LyricsSourceConfigStore.encode(priority.map { it.name })) }
     }
 
     private fun loadAiTranslationConfig(): AiTranslationConfig = runCatching {
@@ -1303,27 +1268,27 @@ class UniversalModuleEntry : XposedModule() {
     }
 
     private fun loadDebugEnabled(): Boolean = runCatching {
-        java.io.File("/data/system/universal_debug.enabled").readText().trim() == "1"
+        java.io.File("/data/system/lyricon_debug.enabled").readText().trim() == "1"
     }.getOrDefault(false)
 
     private fun persistDebugEnabled(enabled: Boolean) {
-        runCatching { java.io.File("/data/system/universal_debug.enabled").writeText(if (enabled) "1" else "0") }
+        runCatching { java.io.File("/data/system/lyricon_debug.enabled").writeText(if (enabled) "1" else "0") }
     }
 
     private fun loadTranslationEnabled(): Boolean = runCatching {
-        java.io.File("/data/system/universal_translation.enabled").readText().trim() != "0"
+        java.io.File("/data/system/lyricon_translation.enabled").readText().trim() != "0"
     }.getOrDefault(true)
 
     private fun persistTranslationEnabled(enabled: Boolean) {
-        runCatching { java.io.File("/data/system/universal_translation.enabled").writeText(if (enabled) "1" else "0") }
+        runCatching { java.io.File("/data/system/lyricon_translation.enabled").writeText(if (enabled) "1" else "0") }
     }
 
     private fun loadClockLineFallbackEnabled(): Boolean = runCatching {
-        java.io.File("/data/system/universal_clock_line_fallback.enabled").readText().trim() != "0"
+        java.io.File("/data/system/lyricon_clock_line_fallback.enabled").readText().trim() != "0"
     }.getOrDefault(true)
 
     private fun persistClockLineFallbackEnabled(enabled: Boolean) {
-        runCatching { java.io.File("/data/system/universal_clock_line_fallback.enabled").writeText(if (enabled) "1" else "0") }
+        runCatching { java.io.File("/data/system/lyricon_clock_line_fallback.enabled").writeText(if (enabled) "1" else "0") }
     }
 
     private fun bindingKey(title: String, artist: String): String =
@@ -1362,29 +1327,32 @@ class UniversalModuleEntry : XposedModule() {
     ): Pair<String, String>? {
         val needle = normalizeLyricText(rawTitle)
         if (needle.length < 8) return null
-        val file = java.io.File("/data/system/universal_lyric_cache.json")
-        if (!file.isFile) return null
-        return runCatching {
-            val root = JSONObject(file.readText())
-            val matches = mutableListOf<Pair<String, String>>()
-            root.keys().forEach { key ->
-                if (UniversalLyricCache.identityFromKey(key) == null) return@forEach
-                val payload = runCatching { JSONObject(root.optString(key)) }.getOrNull() ?: return@forEach
-                if (payload.optBoolean("noLyric", false)) return@forEach
-                val candidateArtist = payload.optString("artist")
-                val candidateAlbum = payload.optString("album")
-                if (!sameIdentityText(artist, candidateArtist)) return@forEach
-                if (!album.isNullOrBlank() && candidateAlbum.isNotBlank() && !sameIdentityText(album, candidateAlbum)) return@forEach
-                val candidateDuration = payload.optLong("durationMs").takeIf { it > 0L }
-                if (durationMs != null && candidateDuration != null && kotlin.math.abs(durationMs - candidateDuration) > 2_500L) return@forEach
-                val lyricText = normalizeLyricText(payload.optString("lyric"))
-                if (lyricText.contains(needle)) {
-                    val songName = payload.optString("songName")
-                    if (songName.isNotBlank()) matches += songName to candidateArtist
+        val files = listOf(java.io.File(UniversalLyricCache.OWN_PATH)).filter { it.isFile }
+        for (file in files) {
+            val match = runCatching {
+                val root = JSONObject(file.readText())
+                val matches = mutableListOf<Pair<String, String>>()
+                root.keys().forEach { key ->
+                    if (UniversalLyricCache.identityFromKey(key) == null) return@forEach
+                    val payload = runCatching { JSONObject(root.optString(key)) }.getOrNull() ?: return@forEach
+                    if (payload.optBoolean("noLyric", false)) return@forEach
+                    val candidateArtist = payload.optString("artist")
+                    val candidateAlbum = payload.optString("album")
+                    if (!sameIdentityText(artist, candidateArtist)) return@forEach
+                    if (!album.isNullOrBlank() && candidateAlbum.isNotBlank() && !sameIdentityText(album, candidateAlbum)) return@forEach
+                    val candidateDuration = payload.optLong("durationMs").takeIf { it > 0L }
+                    if (durationMs != null && candidateDuration != null && kotlin.math.abs(durationMs - candidateDuration) > 2_500L) return@forEach
+                    val lyricText = normalizeLyricText(payload.optString("lyric"))
+                    if (lyricText.contains(needle)) {
+                        val songName = payload.optString("songName")
+                        if (songName.isNotBlank()) matches += songName to candidateArtist
+                    }
                 }
-            }
-            matches.distinct().singleOrNull()
-        }.getOrNull()
+                matches.distinct().singleOrNull()
+            }.getOrNull()
+            if (match != null) return match
+        }
+        return null
     }
 
     private fun normalizeLyricText(value: String?): String = value.orEmpty().lowercase()
@@ -1409,7 +1377,7 @@ class UniversalModuleEntry : XposedModule() {
     }
 
     private fun loadManualBinding(key: String): String? {
-        val file = java.io.File("/data/system/universal_manual_bindings.json")
+        val file = java.io.File("/data/system/lyricon_manual_bindings.json")
         if (!file.isFile) return null
         return runCatching {
             JSONObject(file.readText()).optString(key).takeIf { it.isNotBlank() }
@@ -1418,7 +1386,7 @@ class UniversalModuleEntry : XposedModule() {
 
     private fun saveManualBinding(key: String, jsonStr: String) {
         runCatching {
-            val file = java.io.File("/data/system/universal_manual_bindings.json")
+            val file = java.io.File("/data/system/lyricon_manual_bindings.json")
             val obj = if (file.isFile) JSONObject(file.readText()) else JSONObject()
             obj.put(key, jsonStr)
             file.writeText(obj.toString())

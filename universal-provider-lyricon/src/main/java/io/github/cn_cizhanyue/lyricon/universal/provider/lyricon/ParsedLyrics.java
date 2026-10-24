@@ -7,7 +7,6 @@ import io.github.proify.lyricon.lyric.model.LyricWord;
 import io.github.proify.lyricon.lyric.model.RichLyricLine;
 import io.github.proify.lyricon.lyric.model.Song;
 
-
 final class ParsedLyrics {
 
     final String trackKey;
@@ -81,11 +80,6 @@ final class ParsedLyrics {
         return new Song(trackKey, title, artist, durationMs, null, output);
     }
 
-    
-
-
-
-
     private static List<LyricWord> synthesizeWords(TimedLine line) {
         String text = line.text;
         if (text == null || text.isEmpty() || line.end <= line.begin) {
@@ -121,8 +115,6 @@ final class ParsedLyrics {
         }
         return words.isEmpty() ? null : words;
     }
-
-    
 
     private static List<String> splitUnits(String text) {
         List<String> units = new ArrayList<>();

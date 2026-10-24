@@ -14,13 +14,6 @@ import io.github.proify.lyricon.provider.LyriconFactory;
 import io.github.proify.lyricon.provider.LyriconProvider;
 import io.github.proify.lyricon.provider.RemotePlayer;
 
-
-
-
-
-
-
-
 final class LyriconPublisher {
 
     private static final String TAG = "LyriconUniversal";
@@ -274,7 +267,6 @@ final class LyriconPublisher {
         }
         if (!accepted) {
             
-            
             manualPosition = true;
             try {
                 player.setPlaybackState(pendingState.getState() == PlaybackState.STATE_PLAYING);
@@ -324,10 +316,6 @@ final class LyriconPublisher {
         positionScheduled = true;
         worker.postDelayed(positionTick, 200L);
     }
-
-    
-
-
 
     private boolean usableState(PlaybackState state, boolean freshRequired) {
         if (state == null) {

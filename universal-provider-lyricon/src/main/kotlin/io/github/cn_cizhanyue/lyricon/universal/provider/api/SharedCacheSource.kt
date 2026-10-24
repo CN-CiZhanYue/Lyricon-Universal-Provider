@@ -3,19 +3,12 @@ package io.github.cn_cizhanyue.lyricon.universal.provider.api
 import io.github.cn_cizhanyue.lyricon.universal.provider.cache.UniversalLyricCache
 import org.json.JSONObject
 
-
-
-
-
-
-
-
 class SharedCacheSource : LyricsSource {
 
     override val name: String = "SHARED_CACHE"
 
     override fun fetchLyrics(query: TrackQuery): LyricResult? {
-        val payload = UniversalLyricCache.get(query.title, query.artist) ?: return null
+        val payload = UniversalLyricCache.getOfficial(query.title, query.artist) ?: return null
         val json = runCatching { JSONObject(payload) }.getOrNull() ?: return null
         if (json.optBoolean("noLyric", false)) {
             return null

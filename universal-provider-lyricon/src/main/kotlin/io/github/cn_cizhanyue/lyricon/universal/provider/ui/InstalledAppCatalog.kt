@@ -2,7 +2,9 @@ package io.github.cn_cizhanyue.lyricon.universal.provider.ui
 
 import android.content.Context
 import android.content.pm.ApplicationInfo
+import android.content.pm.LauncherApps
 import android.content.pm.PackageManager
+import android.os.Process
 import android.graphics.Bitmap
 import android.util.LruCache
 import androidx.compose.runtime.Immutable
@@ -17,7 +19,9 @@ import kotlinx.coroutines.withContext
 data class AppItemUi(
     val label: String,
     val packageName: String,
-    val isSystem: Boolean
+    val isSystem: Boolean,
+    val userLabel: String = "",
+    val isPrimaryUser: Boolean = true,
 )
 
 object InstalledAppCatalog {
@@ -32,16 +36,31 @@ object InstalledAppCatalog {
             if (hit.isNotEmpty()) return@withContext hit
         }
         val pm = context.applicationContext.packageManager
-        val installed = pm.getInstalledApplications(0)
         val jobContext = currentCoroutineContext()
-        val items = installed.map { info ->
-            // Leaving the page should stop an unfinished scan, not keep loading every APK.
-            jobContext.ensureActive()
-            AppItemUi(
-                label = info.loadLabel(pm).toString(),
-                packageName = info.packageName,
-                isSystem = (info.flags and ApplicationInfo.FLAG_SYSTEM) != 0
-            )
+        val launcher = context.getSystemService(LauncherApps::class.java)
+        val items = runCatching {
+            launcher.profiles.flatMap { user ->
+                launcher.getActivityList(null, user).map { activity ->
+                    jobContext.ensureActive()
+                    val info = activity.applicationInfo
+                    AppItemUi(
+                        label = activity.label.toString(),
+                        packageName = info.packageName,
+                        isSystem = (info.flags and ApplicationInfo.FLAG_SYSTEM) != 0,
+                        userLabel = user.toString(),
+                        isPrimaryUser = user == Process.myUserHandle(),
+                    )
+                }
+            }.distinctBy { it.packageName + "|" + it.userLabel }
+        }.getOrElse {
+            pm.getInstalledApplications(0).map { info ->
+                jobContext.ensureActive()
+                AppItemUi(
+                    label = info.loadLabel(pm).toString(),
+                    packageName = info.packageName,
+                    isSystem = (info.flags and ApplicationInfo.FLAG_SYSTEM) != 0,
+                )
+            }
         }.sortedBy { it.label.lowercase() }
         cached = items
         items

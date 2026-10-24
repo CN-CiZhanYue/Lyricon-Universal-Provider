@@ -4,14 +4,6 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.util.Log;
 
-
-
-
-
-
-
-
-
 final class SystemServerContext {
 
     private static volatile Context cached;

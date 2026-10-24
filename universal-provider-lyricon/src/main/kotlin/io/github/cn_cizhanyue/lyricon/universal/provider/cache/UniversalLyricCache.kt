@@ -12,7 +12,9 @@ object UniversalLyricCache {
         val stats: Stats
     )
     private var statsSnapshot: StatsSnapshot? = null
-    const val SYSTEM_PATH = "/data/system/universal_lyric_cache.json"
+    const val OWN_PATH = "/data/system/lyricon_lyric_cache.json"
+    const val OFFICIAL_PATH = "/data/system/universal_lyric_cache.json"
+    const val SYSTEM_PATH = OWN_PATH
     const val VERSION = "v9"
     private val VERSIONED_KEY = Regex("^v\\d+\\|")
 
@@ -28,7 +30,16 @@ object UniversalLyricCache {
         "$version|${normalize(title)}|${normalize(artist)}"
 
     @Synchronized
-    fun get(title: String, artist: String, file: File = File(SYSTEM_PATH)): String? {
+    fun get(title: String, artist: String, file: File = File(OWN_PATH)): String? =
+        readValue(file, title, artist)
+
+    @Synchronized
+    fun getOwn(title: String, artist: String): String? = readValue(File(OWN_PATH), title, artist)
+
+    @Synchronized
+    fun getOfficial(title: String, artist: String): String? = readValue(File(OFFICIAL_PATH), title, artist)
+
+    private fun readValue(file: File, title: String, artist: String): String? {
         val root = readRoot(file) ?: return null
         aliasKeys(title, artist).forEach { key ->
             val value = root.optString(key)
@@ -38,7 +49,7 @@ object UniversalLyricCache {
     }
 
     @Synchronized
-    fun put(title: String, artist: String, lyricInfoJson: String, file: File = File(SYSTEM_PATH)) {
+    fun put(title: String, artist: String, lyricInfoJson: String, file: File = File(OWN_PATH)) {
         // Invalidate even if a rewrite keeps both the file size and timestamp unchanged.
         statsSnapshot = null
         val root = readRoot(file) ?: JSONObject()
@@ -48,7 +59,7 @@ object UniversalLyricCache {
     }
 
     @Synchronized
-    fun clear(file: File = File(SYSTEM_PATH)): Stats {
+    fun clear(file: File = File(OWN_PATH)): Stats {
         val previous = stats(file)
         statsSnapshot = null
         if (file.isFile) runCatching { file.delete() }
@@ -56,7 +67,7 @@ object UniversalLyricCache {
     }
 
     @Synchronized
-    fun stats(file: File = File(SYSTEM_PATH)): Stats {
+    fun stats(file: File = File(OWN_PATH)): Stats {
         val path = file.absolutePath
         val modified = file.lastModified()
         val size = file.length()
@@ -84,7 +95,7 @@ object UniversalLyricCache {
         }
     }
 
-    fun getCacheCount(file: File = File(SYSTEM_PATH)): Int = stats(file).songs
+    fun getCacheCount(file: File = File(OWN_PATH)): Int = stats(file).songs
 
     fun get(context: Context, title: String, artist: String): String? = get(title, artist)
 
@@ -97,7 +108,7 @@ object UniversalLyricCache {
     fun clearCache(context: Context): Int = clear().songs
 
     fun putManualBinding(context: Context, title: String, artist: String, lyricInfoJson: String) {
-        context.getSharedPreferences("universal_manual_bindings", Context.MODE_PRIVATE)
+        context.getSharedPreferences("lyricon_manual_bindings", Context.MODE_PRIVATE)
             .edit()
             .putString("${normalize(title)}|${normalize(artist)}", lyricInfoJson)
             .apply()

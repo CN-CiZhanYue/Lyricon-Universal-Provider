@@ -11,14 +11,6 @@ import io.github.proify.lyricon.lyric.model.LyricMetadata
 import io.github.proify.lyricon.lyric.model.Song
 import org.json.JSONObject
 
-
-
-
-
-
-
-
-
 object LyriconBridge {
 
     private const val TAG = "LyriconUniversal"
@@ -33,11 +25,6 @@ object LyriconBridge {
     private val lastTitles = HashMap<String, String>()
     private val lastPlaceholderTitles = HashMap<String, String>()
     private val lastSessionIds = HashMap<String, String>()
-
-    
-
-
-
 
     @JvmStatic
     fun publish(
@@ -199,11 +186,6 @@ object LyriconBridge {
         if (!title.isNullOrBlank()) lastTitles[ownerPackage] = title
         return true
     }
-
-    
-
-
-
 
     private fun normalizePayload(payload: String): String = runCatching {
         val json = JSONObject(payload)

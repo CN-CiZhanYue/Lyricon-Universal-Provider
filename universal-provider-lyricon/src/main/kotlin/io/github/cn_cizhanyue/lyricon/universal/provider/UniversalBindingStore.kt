@@ -62,18 +62,13 @@ object UniversalBindingStore {
             putStringArrayListExtra(UniversalSnapshotStore.EXTRA_BOUND_PACKAGES, ArrayList(packages))
             addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
         }
-        val sent = UniversalBridgeBindingNotifier.sendSafely(context, intent)
-        UniversalBridgeBindingNotifier.sendSafely(
-            context,
-            Intent(intent).setPackage("android")
-        )
+        val sent = runCatching { context.sendBroadcast(Intent(intent).setPackage("android")) }
         UniversalDiagnostics.bridgeBindingsNotified(
             packages.size,
             "system_server",
             sent.isSuccess,
             sent.exceptionOrNull()?.javaClass?.simpleName
         )
-        UniversalBridgeBindingNotifier.notify(context, packages)
     }
     fun persistAppBindingFile(context: Context, packages: Set<String>) {
         val sanitized = PlayerBindingPolicy.sanitize(packages)

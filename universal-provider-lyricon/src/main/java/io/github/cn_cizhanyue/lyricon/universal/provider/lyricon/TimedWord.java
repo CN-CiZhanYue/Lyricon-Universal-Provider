@@ -1,6 +1,5 @@
 package io.github.cn_cizhanyue.lyricon.universal.provider.lyricon;
 
-
 final class TimedWord {
 
     long begin;

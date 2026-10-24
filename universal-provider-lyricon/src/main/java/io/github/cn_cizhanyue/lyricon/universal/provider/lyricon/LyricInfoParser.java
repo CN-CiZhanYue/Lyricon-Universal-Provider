@@ -8,17 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-
-
-
-
-
-
-
-
 final class LyricInfoParser {
 
-    
     static final String LYRIC_INFO_KEY = "lyricInfo";
 
     private static final String[] TRANSLATION_KEYS = {
@@ -65,7 +56,6 @@ final class LyricInfoParser {
             return null;
         }
 
-        
         lines.sort((left, right) -> Long.compare(left.begin, right.begin));
         dropSyntheticWordTiming(lines);
         applyTimings(lines, fallbackDuration);
@@ -125,11 +115,6 @@ final class LyricInfoParser {
         }
         return new ArrayList<>(merged.values());
     }
-
-    
-
-
-
 
     private static void dropSyntheticWordTiming(List<TimedLine> lines) {
         for (TimedLine line : lines) {

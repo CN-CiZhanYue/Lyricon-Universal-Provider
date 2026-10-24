@@ -1,27 +1,15 @@
 package io.github.cn_cizhanyue.lyricon.universal.provider.ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-
-data class AccentPalette(
-    val primary: Color,
-    val onPrimary: Color,
-    val primaryLight: Color,
-    val secondary: Color,
-    val glowA: Color,
-    val glowB: Color,
-    val glowC: Color,
-)
 
 data class PaletteSpec(
     val primaryDark: Color,
@@ -36,26 +24,6 @@ data class PaletteSpec(
     val darkBase: Color,
     val lightBase: Color,
 )
-
-data class AppStyle(
-    val uiTheme: UiTheme,
-    val panelRadius: Dp,
-    val controlRadius: Dp,
-    val titleFont: FontFamily,
-    val bodyFont: FontFamily,
-    val labelFont: FontFamily,
-)
-
-val LocalAccentPalette = staticCompositionLocalOf {
-    AccentPalette(Color(0xFF7CFFCB), Color(0xFF062019), Color(0xFF0F766E), Color(0xFFB99CFF), Color(0xFF7CFFCB), Color(0xFF8B7CFF), Color(0xFF2BD9C4))
-}
-val LocalPaletteSpec = staticCompositionLocalOf { specOf(Palette.AURORA) }
-val LocalUiTheme = staticCompositionLocalOf { UiTheme.GLASS }
-val LocalDarkTheme = staticCompositionLocalOf { true }
-val LocalGlassEnabled = staticCompositionLocalOf { true }
-val LocalAppStyle = staticCompositionLocalOf {
-    AppStyle(UiTheme.GLASS, 28.dp, 16.dp, FontFamily.SansSerif, FontFamily.SansSerif, FontFamily.SansSerif)
-}
 
 fun specOf(palette: Palette): PaletteSpec = when (palette) {
     Palette.AURORA -> PaletteSpec(
@@ -133,14 +101,57 @@ fun specOf(palette: Palette): PaletteSpec = when (palette) {
         Color(0xFF00FFC8), Color(0xFFB6FFDA), Color(0xFF3BFF8F), Color(0xFF00FFC8), Color(0xFFB6FFDA),
         Color(0xFF020304), Color(0xFFEDFAF3),
     )
+    Palette.CLASSIC_BLUE -> PaletteSpec(
+        Color(0xFFA8C7FA), Color(0xFF042C71), Color(0xFF0B57D0), Color.White,
+        Color(0xFF5A5C7C), Color(0xFF7C4DFF), Color(0xFF0B57D0), Color(0xFF7C4DFF), Color(0xFFA8C7FA),
+        Color(0xFF131317), Color(0xFFFAF9FD),
+    )
+    Palette.CLASSIC_TEAL -> PaletteSpec(
+        Color(0xFF80D5D2), Color(0xFF003735), Color(0xFF006A6A), Color.White,
+        Color(0xFF4A6363), Color(0xFF7C4DFF), Color(0xFF006A6A), Color(0xFF7C4DFF), Color(0xFF80D5D2),
+        Color(0xFF101414), Color(0xFFF7FAF9),
+    )
+    Palette.CLASSIC_INDIGO -> PaletteSpec(
+        Color(0xFFB9C3FF), Color(0xFF1A2A6C), Color(0xFF4355B9), Color.White,
+        Color(0xFF5A5C7C), Color(0xFF7C4DFF), Color(0xFF4355B9), Color(0xFF7C4DFF), Color(0xFFB9C3FF),
+        Color(0xFF11131C), Color(0xFFF8F8FE),
+    )
+    Palette.CLASSIC_GREEN -> PaletteSpec(
+        Color(0xFF9CD67D), Color(0xFF0C3900), Color(0xFF386A20), Color.White,
+        Color(0xFF52634A), Color(0xFF7C4DFF), Color(0xFF386A20), Color(0xFF7C4DFF), Color(0xFF9CD67D),
+        Color(0xFF10140F), Color(0xFFF8FAF5),
+    )
+    Palette.CLASSIC_AMBER -> PaletteSpec(
+        Color(0xFFFFD977), Color(0xFF3F2E00), Color(0xFF7A5900), Color.White,
+        Color(0xFF6F5B3E), Color(0xFF7C4DFF), Color(0xFF7A5900), Color(0xFF7C4DFF), Color(0xFFFFD977),
+        Color(0xFF14120D), Color(0xFFFDFAF2),
+    )
+    Palette.MIUI_BLUE -> PaletteSpec(
+        Color(0xFFA8C7FF), Color(0xFF002E6A), Color(0xFF3482FF), Color.White,
+        Color(0xFF7C9CFF), Color(0xFF6BD5FF), Color(0xFF3482FF), Color(0xFF7C9CFF), Color(0xFF6BD5FF),
+        Color(0xFF0F1115), Color(0xFFF5F6F8),
+    )
+    Palette.MIUI_GREEN -> PaletteSpec(
+        Color(0xFF8FE0B0), Color(0xFF00391F), Color(0xFF00A862), Color.White,
+        Color(0xFF6FCF97), Color(0xFF8FE3D0), Color(0xFF00A862), Color(0xFF6FCF97), Color(0xFF8FE3D0),
+        Color(0xFF0E1210), Color(0xFFF4F8F5),
+    )
+    Palette.MIUI_ORANGE -> PaletteSpec(
+        Color(0xFFFFC08A), Color(0xFF3A1A00), Color(0xFFF07A1A), Color.White,
+        Color(0xFFFFB067), Color(0xFFFFD36B), Color(0xFFF07A1A), Color(0xFFFFB067), Color(0xFFFFD36B),
+        Color(0xFF141210), Color(0xFFFAF6F2),
+    )
+    Palette.MIUI_PURPLE -> PaletteSpec(
+        Color(0xFFC9B6FF), Color(0xFF26124D), Color(0xFF7B5CFF), Color.White,
+        Color(0xFFB196FF), Color(0xFFFF9EDB), Color(0xFF7B5CFF), Color(0xFFB196FF), Color(0xFFFF9EDB),
+        Color(0xFF121016), Color(0xFFF8F6FC),
+    )
+    Palette.MIUI_GRAY -> PaletteSpec(
+        Color(0xFFC9CDD4), Color(0xFF1D2129), Color(0xFF5F6368), Color.White,
+        Color(0xFF8A9099), Color(0xFFAEB4BF), Color(0xFF5F6368), Color(0xFF8A9099), Color(0xFFAEB4BF),
+        Color(0xFF0F1115), Color(0xFFF5F6F8),
+    )
 }
-
-private fun styleFor(theme: UiTheme) = when (theme) {
-    UiTheme.GLASS -> AppStyle(theme, 28.dp, 16.dp, FontFamily.SansSerif, FontFamily.SansSerif, FontFamily.SansSerif)
-    UiTheme.PAPER -> AppStyle(theme, 10.dp, 8.dp, FontFamily.Serif, FontFamily.SansSerif, FontFamily.SansSerif)
-    UiTheme.NEON -> AppStyle(theme, 6.dp, 4.dp, FontFamily.Monospace, FontFamily.SansSerif, FontFamily.Monospace)
-}
-
 private fun darkScheme(spec: PaletteSpec, theme: UiTheme): androidx.compose.material3.ColorScheme {
     val base = spec.darkBase
     val primary = spec.primaryDark
@@ -179,7 +190,6 @@ private fun darkScheme(spec: PaletteSpec, theme: UiTheme): androidx.compose.mate
         onErrorContainer = Color(0xFFFFDAD6),
     )
 }
-
 private fun lightScheme(spec: PaletteSpec, theme: UiTheme): androidx.compose.material3.ColorScheme {
     val base = spec.lightBase
     val primary = spec.primaryLight
@@ -219,6 +229,7 @@ private fun lightScheme(spec: PaletteSpec, theme: UiTheme): androidx.compose.mat
     )
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun UniversalM3Theme(
     settings: ThemeSettings = ThemeSettings(),
@@ -230,26 +241,9 @@ fun UniversalM3Theme(
         ThemeMode.DARK -> true
     }
     val spec = specOf(settings.palette)
-    val accent = AccentPalette(
-        primary = if (dark) spec.primaryDark else spec.primaryLight,
-        onPrimary = if (dark) spec.onPrimaryDark else Color.White,
-        primaryLight = spec.primaryLight,
-        secondary = spec.secondary,
-        glowA = spec.glowA,
-        glowB = spec.glowB,
-        glowC = spec.glowC,
+    MaterialExpressiveTheme(
+        colorScheme = if (dark) darkScheme(spec, settings.uiTheme) else lightScheme(spec, settings.uiTheme),
+        motionScheme = MotionScheme.expressive(),
+        content = content,
     )
-    CompositionLocalProvider(
-        LocalAccentPalette provides accent,
-        LocalPaletteSpec provides spec,
-        LocalUiTheme provides settings.uiTheme,
-        LocalDarkTheme provides dark,
-        LocalGlassEnabled provides (settings.glass && settings.uiTheme == UiTheme.GLASS),
-        LocalAppStyle provides styleFor(settings.uiTheme),
-    ) {
-        MaterialTheme(
-            colorScheme = if (dark) darkScheme(spec, settings.uiTheme) else lightScheme(spec, settings.uiTheme),
-            content = content,
-        )
-    }
 }

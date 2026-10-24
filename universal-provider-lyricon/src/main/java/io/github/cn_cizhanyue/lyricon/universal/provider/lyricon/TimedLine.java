@@ -2,7 +2,6 @@ package io.github.cn_cizhanyue.lyricon.universal.provider.lyricon;
 
 import java.util.List;
 
-
 final class TimedLine {
 
     final long begin;

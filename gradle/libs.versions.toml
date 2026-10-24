@@ -19,6 +19,7 @@ junitJupiter = "6.0.3"
 libxposedApi = "102.0.0"
 libxposedService = "102.0.0"
 composeBom = "2024.09.00"
+material3 = "1.5.0-alpha25"
 activityCompose = "1.9.2"
 
 [libraries]
@@ -46,7 +47,7 @@ androidx-activity-compose = { module = "androidx.activity:activity-compose", ver
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
 androidx-compose-ui = { module = "androidx.compose.ui:ui" }
 androidx-compose-ui-graphics = { module = "androidx.compose.ui:ui-graphics" }
-androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
+androidx-compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
 androidx-compose-material-icons = { module = "androidx.compose.material:material-icons-extended" }
 
 [plugins]
