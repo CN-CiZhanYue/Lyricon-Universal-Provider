@@ -89,8 +89,12 @@
     <string name="drag_handle">Long-press to drag</string>
     <string name="toast_session_refreshed">Current session refreshed</string>
     <string name="about_title">About Lyricon Universal Player Provider</string>
-    <string name="about_message">This is an adapted build for Lyricon.\n\nIt is based on the upstream project\'s \"Universal Player Provider\" source, retaining online lyric fetching, caching, source priority and other features, and pushes lyrics to Lyricon.\n\nPlease do not report issues for this build to the upstream project.</string>
-    <string name="about_open_official">Open upstream project</string>
+    <string name="about_message">This is the universal player provider adapter for Lyricon.
+
+This 1.3.2 build ships three Material 3 themes only: Aurora Glass, Paper and Neon. It supports online lyric fetching, an independent cache, source priority, translucent glass, multi-user player selection and syncing lyrics to Lyricon.
+
+Please do not report issues with this build to the upstream project.</string>
+    <string name="about_open_official">Open upstream</string>
     <string name="about_dismiss">Got it</string>
     <string name="section_network">Network</string>
     <string name="settings_network_title">Allow network lyric fetching</string>
@@ -99,15 +103,12 @@
     <string name="network_warning_message">With network access off, only the cache shared with the upstream version can be used, and lyrics may be unavailable. Turn it off anyway?</string>
     <string name="network_warning_confirm">Turn off anyway</string>
     <string name="network_warning_cancel">Cancel</string>
-    <string name="about_network_hint">Network switch</string>
-    <string name="about_network_body">Toggle it in Settings → Allow network lyric fetching. It is on by default; when off, only the cache shared with the official version is used.</string>
-    <string name="about_open_network">Open network settings</string>
     <string name="priority_shared">Shared cache with official version · #%1$d</string>
     <string name="brand_subtitle">Lyricon</string>
     <string name="now_playing">Now playing</string>
     <string name="quick_players">Players</string>
     <string name="lyricon_sync">Lyricon sync</string>
-    <string name="about_open_project">Open project</string>
+    <string name="about_open_project">Open this project</string>
     <string name="settings_section_ai">AI translation</string>
     <string name="settings_ai_enable">Enable AI translation</string>
     <string name="settings_ai_enable_desc">Translate with your OpenAI-compatible API when the source has no translation</string>
@@ -136,9 +137,9 @@
     <string name="ui_glass">Aurora Glass</string>
     <string name="ui_paper">Paper</string>
     <string name="ui_neon">Neon</string>
-    <string name="ui_glass_desc">Aurora glass material theme</string>
-    <string name="ui_paper_desc">Warm paper, serif headings and fine rules</string>
-    <string name="ui_neon_desc">Black grid, monospace type and neon outlines</string>
+    <string name="ui_glass_desc">Aurora glass, translucent cards and a soft glow</string>
+    <string name="ui_paper_desc">Warm paper, fibers, serif headings and fine rules</string>
+    <string name="ui_neon_desc">Dark grid, monospace type and restrained neon outlines</string>
     <string name="theme_palette">Palette</string>
     <string name="theme_custom_bg">Custom background</string>
     <string name="theme_custom_bg_desc">Pick an image as the global background; a readability scrim is applied</string>
@@ -160,29 +161,16 @@
     <string name="palette_volt">Volt</string>
     <string name="palette_plasma">Plasma</string>
     <string name="palette_matrix">Matrix</string>
-    <string name="ui_classic">Classic</string>
-    <string name="ui_classic_desc">Classic palette theme; no upstream layout</string>
-    <string name="palette_classic_blue">Blue</string>
-    <string name="palette_classic_teal">Teal</string>
-    <string name="palette_classic_indigo">Indigo</string>
-    <string name="palette_classic_green">Green</string>
-    <string name="palette_classic_amber">Amber</string>
     <string name="glass_effect">Glass effect</string>
     <string name="glass_translucent">Translucent</string>
     <string name="glass_liquid">Liquid glass</string>
     <string name="glass_off">Off</string>
     <string name="glass_effect_desc">Translucent is only for the Liquid Glass theme; liquid glass is only for the MIUIX theme. They never run together. Liquid glass needs Android 12+.</string>
-    <string name="ui_miuix">MIUIX</string>
-    <string name="ui_miuix_desc">Xiaomi HyperOS style: large radii, soft cards and generous spacing</string>
     <string name="palette_miui_blue">MIUI Blue</string>
     <string name="palette_miui_green">MIUI Green</string>
     <string name="palette_miui_orange">MIUI Orange</string>
     <string name="palette_miui_purple">MIUI Purple</string>
     <string name="palette_miui_gray">MIUI Gray</string>
-    <string name="ui_system">UI system</string>
-    <string name="ui_system_desc">Choose the Material 3 theme set or the MIUIX component UI</string>
-    <string name="ui_system_m3">M3 themes</string>
-    <string name="ui_system_miuix">MIUIX</string>
     <string name="miuix_players_hint">Enable a player to send its songs to Lyricon</string>
     <string name="miuix_blur_toggle">MIUIX liquid-glass blur</string>
     <string name="miuix_floating_bar_toggle">MIUIX floating bottom bar</string>
@@ -194,4 +182,5 @@
     <string name="language_zh">中文</string>
     <string name="language_en">English</string>
     <string name="glass_material">Translucent glass</string>
+    <string name="search_sources">Lyric sources</string>
 </resources>

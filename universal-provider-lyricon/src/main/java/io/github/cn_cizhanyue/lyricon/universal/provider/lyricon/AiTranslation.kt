@@ -47,7 +47,15 @@ object AiTranslation {
         target: String,
         texts: List<String>,
     ): List<String>? {
-        val system = "You translate song lyrics into $target. Keep exactly one output line per input line, in the same order. Return only the translated lines. Do not add numbering, timestamps, quotes or explanations."
+        val system = """
+            You are a precise song-lyric translator.
+            Translate each input line into $target.
+            Return exactly ${texts.size} lines, one translation per input line, in the same order.
+            Never merge, split, skip, reorder or add lines.
+            Keep the original punctuation and emotional tone.
+            Do not output timestamps, numbering, quotes, Markdown, notes or explanations.
+            If a line is instrumental or has no words, return an empty line for it.
+        """.trimIndent()
         val payload = JSONObject().apply {
             put("model", model)
             put("temperature", 0.2)

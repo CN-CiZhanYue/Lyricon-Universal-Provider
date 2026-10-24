@@ -17,8 +17,8 @@ configure<ApplicationExtension> {
         applicationId = "io.github.cn_cizhanyue.lyricon.universal.provider"
         minSdk = 27
         targetSdk = rootProject.extra.get("targetSdkVersion") as Int
-        versionCode = 15
-        versionName = "1.3.1"
+        versionCode = 16
+        versionName = "1.3.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -51,7 +51,7 @@ configure<ApplicationExtension> {
             matchingFallbacks += "release"
             signingConfig = signingConfigs.getByName("debug")
             isDebuggable = false
-            versionNameSuffix = "-ui-perf2"
+            versionNameSuffix = ""
         }
     }
 

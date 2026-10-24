@@ -88,8 +88,12 @@
     <string name="toast_priority_saved">歌词源配置已应用</string>
     <string name="drag_handle">长按拖动</string>
     <string name="toast_session_refreshed">已刷新当前会话</string>
-    <string name="about_title">关于词幕通用播放器Provider</string>
-    <string name="about_message">这是面向词幕（Lyricon）的适配版本。\n\n本版本基于上游项目的 "通用播放器 Provider" 源码适配，保留在线取词、缓存、来源优先级等功能，并把歌词同步推送到词幕。\n\n请不要向上游项目提交本版本的 issue。</string>
+    <string name="about_title">关于词幕通用播放器 Provider</string>
+    <string name="about_message">这是面向词幕（Lyricon）的通用播放器 Provider 适配版本。
+
+当前版本为 1.3.2，仅保留流光玻璃、纸张、霓虹三套 Material 3 主题；支持在线取词、独立缓存、歌词源优先级、半透明玻璃、多用户播放器选择，并将歌词同步推送到词幕。
+
+请勿将本版本的 issue 提交到上游项目。</string>
     <string name="about_open_official">打开上游项目</string>
     <string name="about_dismiss">知道了</string>
     <string name="section_network">联网</string>
@@ -99,9 +103,6 @@
     <string name="network_warning_message">关闭联网后只能使用与上游版本共用的缓存，可能无法获取歌词。仍然关闭？</string>
     <string name="network_warning_confirm">仍然关闭</string>
     <string name="network_warning_cancel">取消</string>
-    <string name="about_network_hint">联网开关</string>
-    <string name="about_network_body">在「设置 → 允许联网获取歌词」中开关，默认开启；关闭后仅使用与官方版共用的缓存。</string>
-    <string name="about_open_network">去设置联网开关</string>
     <string name="priority_shared">和官方版共用缓存 · 第%1$d位</string>
     <string name="brand_subtitle">Lyricon</string>
     <string name="now_playing">正在播放</string>
@@ -136,9 +137,9 @@
     <string name="ui_glass">流光玻璃</string>
     <string name="ui_paper">纸张</string>
     <string name="ui_neon">霓虹</string>
-    <string name="ui_glass_desc">极光玻璃材质主题</string>
-    <string name="ui_paper_desc">暖纸底色、衬线标题与细线分隔</string>
-    <string name="ui_neon_desc">黑底网格、等宽字体与霓虹描边</string>
+    <string name="ui_glass_desc">极光玻璃材质、半透明卡片与柔和光晕</string>
+    <string name="ui_paper_desc">暖纸底色、纸纹、衬线标题与细线分隔</string>
+    <string name="ui_neon_desc">深色网格、等宽字体与克制的霓虹描边</string>
     <string name="theme_palette">主题配色</string>
     <string name="theme_custom_bg">自定义背景</string>
     <string name="theme_custom_bg_desc">选择一张图片作为全局背景，会叠加可读性遮罩</string>
@@ -160,29 +161,16 @@
     <string name="palette_volt">电压</string>
     <string name="palette_plasma">等离子</string>
     <string name="palette_matrix">矩阵</string>
-    <string name="ui_classic">经典版</string>
-    <string name="ui_classic_desc">经典配色主题；不继承上游布局</string>
-    <string name="palette_classic_blue">蓝</string>
-    <string name="palette_classic_teal">青</string>
-    <string name="palette_classic_indigo">靛</string>
-    <string name="palette_classic_green">绿</string>
-    <string name="palette_classic_amber">琥珀</string>
     <string name="glass_effect">玻璃效果</string>
     <string name="glass_translucent">半透明</string>
     <string name="glass_liquid">液态玻璃</string>
     <string name="glass_off">关闭</string>
     <string name="glass_effect_desc">半透明仅用于 Liquid Glass 主题，液态玻璃仅用于 MIUIX 主题；两者不会同时开启。液态玻璃需要 Android 12+，低版本不启用。</string>
-    <string name="ui_miuix">MIUIX</string>
-    <string name="ui_miuix_desc">小米 HyperOS 风格：大圆角、柔和卡片与留白</string>
     <string name="palette_miui_blue">MIUI 蓝</string>
     <string name="palette_miui_green">MIUI 绿</string>
     <string name="palette_miui_orange">MIUI 橙</string>
     <string name="palette_miui_purple">MIUI 紫</string>
     <string name="palette_miui_gray">MIUI 灰</string>
-    <string name="ui_system">界面系统</string>
-    <string name="ui_system_desc">选择 Material 3 主题组或 MIUIX 组件界面</string>
-    <string name="ui_system_m3">M3 主题</string>
-    <string name="ui_system_miuix">MIUIX</string>
     <string name="miuix_players_hint">打开开关后，该播放器的歌曲会进入词幕</string>
     <string name="miuix_blur_toggle">MIUIX 液态玻璃模糊</string>
     <string name="miuix_floating_bar_toggle">MIUIX 悬浮底栏</string>
@@ -194,4 +182,5 @@
     <string name="language_zh">中文</string>
     <string name="language_en">English</string>
     <string name="glass_material">半透明玻璃</string>
+    <string name="search_sources">歌词来源</string>
 </resources>

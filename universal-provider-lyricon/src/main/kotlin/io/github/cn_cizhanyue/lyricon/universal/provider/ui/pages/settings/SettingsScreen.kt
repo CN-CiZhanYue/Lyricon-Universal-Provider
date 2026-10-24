@@ -89,7 +89,6 @@ fun SettingsScreen(
         UiTheme.GLASS to stringResource(R.string.ui_glass),
         UiTheme.PAPER to stringResource(R.string.ui_paper),
         UiTheme.NEON to stringResource(R.string.ui_neon),
-        UiTheme.CLASSIC to stringResource(R.string.ui_classic),
     )
     val modeLabels = mapOf(
         ThemeMode.SYSTEM to stringResource(R.string.theme_system),
@@ -104,7 +103,7 @@ fun SettingsScreen(
         item {
             SettingsGroup(stringResource(R.string.theme_section)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    UiTheme.values().filter { it != UiTheme.MIUIX }.forEach { item ->
+                    UiTheme.values().forEach { item ->
                         Choice(themeLabels.getValue(item), theme.uiTheme == item, Modifier.weight(1f)) {
                             themeController.update(theme.copy(uiTheme = item, palette = palettesFor(item).first()))
                         }
@@ -199,17 +198,17 @@ fun SettingsScreen(
                         TextFieldRow(stringResource(R.string.settings_ai_target), settings.aiTarget) {
                             settingsController.updateAi { state -> state.copy(aiTarget = it) }
                         }
+                        Button(
+                            onClick = {
+                                if (!settingsController.saveAi()) {
+                                    Toast.makeText(context, context.getString(R.string.settings_ai_missing), Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                        ) { Text(stringResource(R.string.settings_ai_save)) }
                     }
                 }
-                Button(
-                    onClick = {
-                        if (!settingsController.saveAi()) {
-                            Toast.makeText(context, context.getString(R.string.settings_ai_missing), Toast.LENGTH_SHORT).show()
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                ) { Text(stringResource(R.string.settings_ai_save)) }
             }
         }
         item {

@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import io.github.cn_cizhanyue.lyricon.universal.provider.UniversalAppIo
+import io.github.cn_cizhanyue.lyricon.universal.provider.ui.UiTheme
 import kotlinx.coroutines.withContext
 
 object BackgroundImageCache {
@@ -42,6 +43,31 @@ fun DrawScope.drawWallpaper(design: AppDesign, custom: ImageBitmap?) {
         drawRect(Color.Black.copy(alpha = if (design.dark) 0.42f else 0.22f))
         return
     }
+    val c = design.colors
+    if (design.uiTheme == UiTheme.PAPER) {
+        drawRect(c.background)
+        for (y in 0..size.height.toInt() step 28) {
+            drawLine(c.onSurfaceVariant.copy(alpha = 0.10f), Offset(0f, y.toFloat()), Offset(size.width, y.toFloat()), 1f)
+        }
+        drawRect(Brush.verticalGradient(listOf(Color.Transparent, c.background.copy(alpha = 0.5f))))
+        return
+    }
+    if (design.uiTheme == UiTheme.NEON) {
+        drawRect(c.background)
+        val step = 40f
+        var x = 0f
+        while (x < size.width) {
+            drawLine(c.primary.copy(alpha = 0.08f), Offset(x, 0f), Offset(x, size.height), 1f)
+            x += step
+        }
+        var y = 0f
+        while (y < size.height) {
+            drawLine(c.primary.copy(alpha = 0.06f), Offset(0f, y), Offset(size.width, y), 1f)
+            y += step
+        }
+        drawCircle(Brush.radialGradient(listOf(c.primary.copy(alpha = 0.18f), Color.Transparent), Offset(size.width * 0.8f, 0f), size.width), radius = size.width, center = Offset(size.width * 0.8f, 0f))
+        return
+    }
     drawRect(
         Brush.linearGradient(
             listOf(design.colors.background, design.colors.surfaceHigh),
@@ -49,7 +75,6 @@ fun DrawScope.drawWallpaper(design: AppDesign, custom: ImageBitmap?) {
             end = Offset(size.width, size.height),
         )
     )
-    val c = design.colors
     drawCircle(
         Brush.radialGradient(listOf(c.wallpaperA.copy(alpha = 0.34f), Color.Transparent), Offset(size.width * 0.15f, size.height * 0.1f), size.width * 0.75f),
         radius = size.width * 0.75f,

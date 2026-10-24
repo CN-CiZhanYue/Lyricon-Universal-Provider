@@ -53,9 +53,10 @@ object LyriconBridge {
                 return@post
             }
             val payloadKey = "$generation|${payload.hashCode()}|${payload.length}"
-            if (lastPayloadKeys[ownerPackage] == payloadKey) {
-                
-                
+            if (publishers[ownerPackage] == null) {
+                lastPayloadKeys.remove(ownerPackage)
+            }
+            if (publishers[ownerPackage] != null && lastPayloadKeys[ownerPackage] == payloadKey) {
                 return@post
             }
             lastPayloadKeys[ownerPackage] = payloadKey

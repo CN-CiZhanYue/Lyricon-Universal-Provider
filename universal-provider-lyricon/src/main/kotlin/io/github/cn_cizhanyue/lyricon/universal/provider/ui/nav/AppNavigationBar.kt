@@ -1,5 +1,6 @@
 package io.github.cn_cizhanyue.lyricon.universal.provider.ui.nav
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PlayCircle
@@ -10,7 +11,12 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import io.github.cn_cizhanyue.lyricon.universal.provider.R
 import io.github.cn_cizhanyue.lyricon.universal.provider.ui.Screen
 import io.github.cn_cizhanyue.lyricon.universal.provider.ui.design.LocalAppDesign
@@ -24,7 +30,25 @@ fun AppNavigationBar(current: Screen, onSelect: (Screen) -> Unit) {
         Screen.SEARCH to Icons.Filled.Search,
         Screen.SETTINGS to Icons.Filled.Settings,
     )
-    NavigationBar(containerColor = design.colors.surface.copy(alpha = 0.96f)) {
+    val container = if (design.glassEnabled) {
+        design.colors.surface.copy(alpha = if (design.dark) 0.62f else 0.68f)
+    } else {
+        design.colors.surface
+    }
+    NavigationBar(
+        modifier = Modifier
+            .fillMaxWidth()
+            .drawBehind {
+                drawLine(
+                    color = if (design.dark) Color.White.copy(alpha = 0.14f) else Color.Black.copy(alpha = 0.06f),
+                    start = Offset.Zero,
+                    end = Offset(size.width, 0f),
+                    strokeWidth = 1.dp.toPx(),
+                )
+            },
+        containerColor = container,
+        tonalElevation = 0.dp,
+    ) {
         items.forEach { (target, icon) ->
             val label = when (target) {
                 Screen.HOME -> stringResource(R.string.nav_home)

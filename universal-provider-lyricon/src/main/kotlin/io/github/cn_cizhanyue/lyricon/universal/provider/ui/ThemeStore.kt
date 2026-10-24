@@ -15,26 +15,21 @@ import java.io.FileOutputStream
 
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
-enum class UiTheme { GLASS, PAPER, NEON, CLASSIC, MIUIX }
+enum class UiTheme { GLASS, PAPER, NEON }
 
 enum class GlassEffect { TRANSLUCENT, OFF }
 
-enum class UiSystem { M3, MIUIX }
-
-enum class Palette { AURORA, EMBER, TIDE, ORCHID, GLACIER, INK, SEPIA, SAGE, COBALT, RUST, ACID, CYBER, VOLT, PLASMA, MATRIX, CLASSIC_BLUE, CLASSIC_TEAL, CLASSIC_INDIGO, CLASSIC_GREEN, CLASSIC_AMBER, MIUI_BLUE, MIUI_GREEN, MIUI_ORANGE, MIUI_PURPLE, MIUI_GRAY }
+enum class Palette { AURORA, EMBER, TIDE, ORCHID, GLACIER, INK, SEPIA, SAGE, COBALT, RUST, ACID, CYBER, VOLT, PLASMA, MATRIX }
 
 fun Palette.uiTheme(): UiTheme = when (this) {
     Palette.AURORA, Palette.EMBER, Palette.TIDE, Palette.ORCHID, Palette.GLACIER -> UiTheme.GLASS
     Palette.INK, Palette.SEPIA, Palette.SAGE, Palette.COBALT, Palette.RUST -> UiTheme.PAPER
     Palette.ACID, Palette.CYBER, Palette.VOLT, Palette.PLASMA, Palette.MATRIX -> UiTheme.NEON
-    Palette.CLASSIC_BLUE, Palette.CLASSIC_TEAL, Palette.CLASSIC_INDIGO, Palette.CLASSIC_GREEN, Palette.CLASSIC_AMBER -> UiTheme.CLASSIC
-    Palette.MIUI_BLUE, Palette.MIUI_GREEN, Palette.MIUI_ORANGE, Palette.MIUI_PURPLE, Palette.MIUI_GRAY -> UiTheme.MIUIX
 }
 
 fun palettesFor(theme: UiTheme): List<Palette> = Palette.values().filter { it.uiTheme() == theme }
 
 data class ThemeSettings(
-    val system: UiSystem = UiSystem.M3,
     val uiTheme: UiTheme = UiTheme.GLASS,
     val palette: Palette = Palette.AURORA,
     val mode: ThemeMode = ThemeMode.SYSTEM,
@@ -82,48 +77,25 @@ object ThemeStore {
                 GlassEffect.OFF
             }
         }
-        val system = runCatching {
-            UiSystem.valueOf(prefs.getString(UniversalSettingsConstants.KEY_UI_SYSTEM, UiSystem.M3.name).orEmpty())
-        }.getOrDefault(UiSystem.M3)
-        val effectiveTheme = if (system == UiSystem.M3 && theme == UiTheme.MIUIX) UiTheme.GLASS else theme
-        val normalizedEffect = when (effectiveTheme) {
-            UiTheme.GLASS -> effect
-            else -> effect
-        }
-        val effectivePalette = when {
-            system == UiSystem.MIUIX && !palette.name.startsWith("MIUI_") -> Palette.MIUI_BLUE
-            effectiveTheme != theme -> palettesFor(effectiveTheme).first()
-            else -> palette
-        }
+        val effectivePalette = if (palette.uiTheme() == theme) palette else palettesFor(theme).first()
         settings = ThemeSettings(
-            system = system,
-            uiTheme = effectiveTheme,
+            uiTheme = theme,
             palette = effectivePalette,
             mode = mode,
-            effect = normalizedEffect,
+            effect = effect,
             customBackground = custom,
         )
     }
 
     fun update(context: Context, value: ThemeSettings) {
-        val normalizedUiTheme = when {
-            value.system == UiSystem.M3 && value.uiTheme == UiTheme.MIUIX -> UiTheme.GLASS
-            else -> value.uiTheme
-        }
-        val normalizedEffect = when (normalizedUiTheme) {
-            UiTheme.GLASS -> value.effect
-            UiTheme.MIUIX -> value.effect
-            else -> value.effect
-        }
-        val normalized = if (value.palette.uiTheme() == normalizedUiTheme) {
-            value.copy(uiTheme = normalizedUiTheme, effect = normalizedEffect)
+        val normalized = if (value.palette.uiTheme() == value.uiTheme) {
+            value
         } else {
-            value.copy(uiTheme = normalizedUiTheme, palette = palettesFor(normalizedUiTheme).first(), effect = normalizedEffect)
+            value.copy(palette = palettesFor(value.uiTheme).first())
         }
         settings = normalized
         context.getSharedPreferences(UniversalSettingsConstants.PREFS_NAME, Context.MODE_PRIVATE)
             .edit()
-            .putString(UniversalSettingsConstants.KEY_UI_SYSTEM, normalized.system.name)
             .putString(UniversalSettingsConstants.KEY_THEME_UI, normalized.uiTheme.name)
             .putString(UniversalSettingsConstants.KEY_THEME_PALETTE, normalized.palette.name)
             .putString(UniversalSettingsConstants.KEY_THEME_MODE, normalized.mode.name)

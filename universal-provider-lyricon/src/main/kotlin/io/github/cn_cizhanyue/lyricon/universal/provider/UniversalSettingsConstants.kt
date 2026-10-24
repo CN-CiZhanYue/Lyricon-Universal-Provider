@@ -17,7 +17,6 @@ object UniversalSettingsConstants {
     const val KEY_CUSTOM_BACKGROUND = "custom_background"
     const val KEY_THEME_MODE = "theme_mode"
     const val KEY_THEME_ACCENT = "theme_accent"
-    const val KEY_UI_SYSTEM = "ui_system"
     const val KEY_GLASS = "glass_enabled"
     const val KEY_GLASS_EFFECT = "glass_effect"
     const val KEY_LANGUAGE = "ui_language"

@@ -101,59 +101,9 @@ fun specOf(palette: Palette): PaletteSpec = when (palette) {
         Color(0xFF00FFC8), Color(0xFFB6FFDA), Color(0xFF3BFF8F), Color(0xFF00FFC8), Color(0xFFB6FFDA),
         Color(0xFF020304), Color(0xFFEDFAF3),
     )
-    Palette.CLASSIC_BLUE -> PaletteSpec(
-        Color(0xFFA8C7FA), Color(0xFF042C71), Color(0xFF0B57D0), Color.White,
-        Color(0xFF5A5C7C), Color(0xFF7C4DFF), Color(0xFF0B57D0), Color(0xFF7C4DFF), Color(0xFFA8C7FA),
-        Color(0xFF131317), Color(0xFFFAF9FD),
-    )
-    Palette.CLASSIC_TEAL -> PaletteSpec(
-        Color(0xFF80D5D2), Color(0xFF003735), Color(0xFF006A6A), Color.White,
-        Color(0xFF4A6363), Color(0xFF7C4DFF), Color(0xFF006A6A), Color(0xFF7C4DFF), Color(0xFF80D5D2),
-        Color(0xFF101414), Color(0xFFF7FAF9),
-    )
-    Palette.CLASSIC_INDIGO -> PaletteSpec(
-        Color(0xFFB9C3FF), Color(0xFF1A2A6C), Color(0xFF4355B9), Color.White,
-        Color(0xFF5A5C7C), Color(0xFF7C4DFF), Color(0xFF4355B9), Color(0xFF7C4DFF), Color(0xFFB9C3FF),
-        Color(0xFF11131C), Color(0xFFF8F8FE),
-    )
-    Palette.CLASSIC_GREEN -> PaletteSpec(
-        Color(0xFF9CD67D), Color(0xFF0C3900), Color(0xFF386A20), Color.White,
-        Color(0xFF52634A), Color(0xFF7C4DFF), Color(0xFF386A20), Color(0xFF7C4DFF), Color(0xFF9CD67D),
-        Color(0xFF10140F), Color(0xFFF8FAF5),
-    )
-    Palette.CLASSIC_AMBER -> PaletteSpec(
-        Color(0xFFFFD977), Color(0xFF3F2E00), Color(0xFF7A5900), Color.White,
-        Color(0xFF6F5B3E), Color(0xFF7C4DFF), Color(0xFF7A5900), Color(0xFF7C4DFF), Color(0xFFFFD977),
-        Color(0xFF14120D), Color(0xFFFDFAF2),
-    )
-    Palette.MIUI_BLUE -> PaletteSpec(
-        Color(0xFFA8C7FF), Color(0xFF002E6A), Color(0xFF3482FF), Color.White,
-        Color(0xFF7C9CFF), Color(0xFF6BD5FF), Color(0xFF3482FF), Color(0xFF7C9CFF), Color(0xFF6BD5FF),
-        Color(0xFF0F1115), Color(0xFFF5F6F8),
-    )
-    Palette.MIUI_GREEN -> PaletteSpec(
-        Color(0xFF8FE0B0), Color(0xFF00391F), Color(0xFF00A862), Color.White,
-        Color(0xFF6FCF97), Color(0xFF8FE3D0), Color(0xFF00A862), Color(0xFF6FCF97), Color(0xFF8FE3D0),
-        Color(0xFF0E1210), Color(0xFFF4F8F5),
-    )
-    Palette.MIUI_ORANGE -> PaletteSpec(
-        Color(0xFFFFC08A), Color(0xFF3A1A00), Color(0xFFF07A1A), Color.White,
-        Color(0xFFFFB067), Color(0xFFFFD36B), Color(0xFFF07A1A), Color(0xFFFFB067), Color(0xFFFFD36B),
-        Color(0xFF141210), Color(0xFFFAF6F2),
-    )
-    Palette.MIUI_PURPLE -> PaletteSpec(
-        Color(0xFFC9B6FF), Color(0xFF26124D), Color(0xFF7B5CFF), Color.White,
-        Color(0xFFB196FF), Color(0xFFFF9EDB), Color(0xFF7B5CFF), Color(0xFFB196FF), Color(0xFFFF9EDB),
-        Color(0xFF121016), Color(0xFFF8F6FC),
-    )
-    Palette.MIUI_GRAY -> PaletteSpec(
-        Color(0xFFC9CDD4), Color(0xFF1D2129), Color(0xFF5F6368), Color.White,
-        Color(0xFF8A9099), Color(0xFFAEB4BF), Color(0xFF5F6368), Color(0xFF8A9099), Color(0xFFAEB4BF),
-        Color(0xFF0F1115), Color(0xFFF5F6F8),
-    )
 }
 private fun darkScheme(spec: PaletteSpec, theme: UiTheme): androidx.compose.material3.ColorScheme {
-    val base = spec.darkBase
+    val base = lerp(spec.darkBase, Color.White, 0.10f)
     val primary = spec.primaryDark
     return darkColorScheme(
         primary = primary,
@@ -173,7 +123,7 @@ private fun darkScheme(spec: PaletteSpec, theme: UiTheme): androidx.compose.mate
         surface = base,
         onSurface = Color(0xFFF2F5FA),
         surfaceVariant = lerp(base, Color.White, 0.08f),
-        onSurfaceVariant = Color(0xFFA8B1C2),
+        onSurfaceVariant = Color(0xFFC8CDD6),
         surfaceContainerLowest = lerp(base, Color.Black, 0.15f),
         surfaceContainerLow = lerp(base, Color.White, 0.04f),
         surfaceContainer = lerp(base, Color.White, 0.07f),

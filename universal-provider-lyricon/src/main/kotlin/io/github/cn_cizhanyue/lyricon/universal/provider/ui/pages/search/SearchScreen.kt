@@ -111,25 +111,25 @@ fun SearchScreen(
                     Spacer(Modifier.height(6.dp))
                     Text(status, style = design.typography.caption)
                 }
-            }
-        }
-        item {
-            Row(
-                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                val filters = listOf(
-                    stringResource(R.string.filter_all) to null,
-                    stringResource(R.string.source_qq) to "QQ",
-                    stringResource(R.string.source_netease) to "网易云",
-                    stringResource(R.string.source_apple) to "Apple",
-                )
-                filters.forEach { (label, value) ->
-                    FilterChip(
-                        selected = selectedSource == value,
-                        onClick = { selectedSource = value },
-                        label = { Text(label) },
+                Spacer(Modifier.height(10.dp))
+                Text(stringResource(R.string.search_sources), style = design.typography.label)
+                Row(
+                    Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    val filters = listOf(
+                        stringResource(R.string.filter_all) to null,
+                        stringResource(R.string.source_qq) to "QQ",
+                        stringResource(R.string.source_netease) to "网易云",
+                        stringResource(R.string.source_apple) to "Apple",
                     )
+                    filters.forEach { (label, value) ->
+                        FilterChip(
+                            selected = selectedSource == value,
+                            onClick = { selectedSource = value },
+                            label = { Text(label) },
+                        )
+                    }
                 }
             }
         }

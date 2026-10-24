@@ -1,8 +1,5 @@
-name: Build Lyricon Universal Provider
-on:
-  push: { branches: [ main, master ] }
-  pull_request:
-  workflow_dispatch:
+name: Build
+on: [push, pull_request, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,7 +12,4 @@ jobs:
         with: { gradle-version: wrapper }
       - run: ./gradlew :universal-provider-lyricon:assembleDebug --build-cache --stacktrace
       - uses: actions/upload-artifact@v4
-        with:
-          name: universal-provider-lyricon-debug
-          path: universal-provider-lyricon/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
+        with: { name: universal-provider-lyricon-debug, path: universal-provider-lyricon/build/outputs/apk/debug/*.apk, if-no-files-found: error }
